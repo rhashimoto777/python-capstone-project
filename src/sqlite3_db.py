@@ -1,7 +1,7 @@
 import sqlite3
 import os
-
 import common
+
 def init():
     """
     初回起動時の処理
@@ -29,10 +29,12 @@ def _create_db():
             CREATE TABLE IF NOT EXISTS FoodData (
                 FoodDataID INTEGER PRIMARY KEY,
                 FoodName TEXT,
-                Calory_Total_Per100g REAL,
-                Grams_Protein_Per100g REAL,
-                Grams_Fat_Per100g REAL,
-                Grams_Carbo_Per100g REAL
+                Calory_Total REAL,
+                Grams_Protein REAL,
+                Grams_Fat REAL,
+                Grams_Carbo REAL,
+                StandardUnit_Name TEXT,
+                StandardUnit_Grams REAL
             )
         ''')
 

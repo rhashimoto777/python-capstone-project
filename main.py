@@ -1,7 +1,7 @@
 import sys
 import os
 
-# subfolderをモジュール検索パスに追加
+# srcフォルダをモジュール検索パスに追加
 current_dir = os.path.dirname(os.path.abspath(__file__))
 subfolder_path = os.path.join(current_dir, 'src')
 sys.path.insert(0, subfolder_path)
@@ -9,6 +9,7 @@ sys.path.insert(0, subfolder_path)
 # srcフォルダ内の.pyをインポート
 import sqlite3_db
 import common
+import fooddata
 
 #________________________________________________________________________________________________________________________
 def init_process():
@@ -17,6 +18,7 @@ def init_process():
     """
     # ユーザーIDの概念は今後の拡張に備えたものであり、現実装においては「user_default」以外のユーザーは存在しないとする。
     common.init() 
+    fooddata.init()
     sqlite3_db.init()
 
 def main():
