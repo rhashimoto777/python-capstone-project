@@ -40,11 +40,11 @@ class BackEndOperator():
             # 既に同じ料理が登録されている状態。TODO: 何らかユーザーにメッセージで通知する。
             pass
         else:
-            new_cooking_id = self.__issue_new_id(self.df_dict["Cooking"]['CookingID'].tolist())
-            df_cooking_attributes["CookingID"] = new_cooking_id
+            cooking_id = self.__issue_new_id(self.df_dict["Cooking"]['CookingID'].tolist())
+            df_cooking_attributes["CookingID"] = cooking_id
             self.__push_df_to_db_by_append("Cooking", df_cooking_attributes)
 
-            df_food_and_grams["CookingID"] = new_cooking_id
+            df_food_and_grams["CookingID"] = cooking_id
             self.__push_df_to_db_by_append("CookingFoodData", df_food_and_grams)
         return cooking_id
     
