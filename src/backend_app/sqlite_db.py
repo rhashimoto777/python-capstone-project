@@ -25,18 +25,18 @@ class DataBaseOperator:
 
             # DataFrameに変換
             for table_name in tables:
-                query = f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 5"
+                query = f"SELECT * FROM {table_name}"
                 df = pd.read_sql_query(query, conn)
                 df_dict[table_name] = df
         return df_dict
     
-    def write_db_from_df(self, table_name, df):
+    def replace_dbtable_from_df(self, table_name, df):
         """
         DataFrameをDBに書き込む
         """
         try:
             with self.__get_connection_to_db() as conn:
-                df.to_sql(table_name, conn, if_exists='append', index=False)
+                df.to_sql(table_name, conn, if_exists='replace', index=False)
         except Exception as e:
             print(f'Error : {e}')
         return
@@ -70,7 +70,7 @@ class DataBaseOperator:
 
         # DBのFoodDataテーブルへの書き込み
         with self.__get_connection_to_db() as conn:
-            df.to_sql('FoodData', conn, if_exists='append', index=False)
+            df.to_sql('FoodData', conn, if_exists='replace', index=False)
         return
 
 
