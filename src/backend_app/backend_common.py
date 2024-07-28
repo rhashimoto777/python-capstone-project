@@ -26,7 +26,7 @@ def _gen_root_path():
     """
     global ROOT_PATH
     current_path = Path(__file__).resolve().parent
-    ROOT_PATH = current_path.parent
+    ROOT_PATH = current_path.parent.parent
     return
 
 def _gen_fooddata_json_path_and_name():

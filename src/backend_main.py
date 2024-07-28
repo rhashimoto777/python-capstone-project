@@ -3,13 +3,18 @@ import os
 
 # subfolderをモジュール検索パスに追加
 current_dir = os.path.dirname(os.path.abspath(__file__))
-subfolder_path = os.path.join(current_dir, 'src')
+subfolder_path = os.path.join(current_dir, 'backend_app')
 sys.path.insert(0, subfolder_path)
 
-# srcフォルダ内の.pyをインポート
-import backend_main
-import common
+# back-end_appフォルダ内の.pyをインポート
+import sqlite3_db
+import backend_common as common
 import fooddata
+
+class BackEndMain():
+    def __init__(self):
+        pass
+
 
 #________________________________________________________________________________________________________________________
 def init_process():

@@ -1,6 +1,6 @@
 import json
 import os
-import common
+import backend_common as common
 
 def init():
     """
