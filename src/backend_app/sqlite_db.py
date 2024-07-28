@@ -155,7 +155,7 @@ class DataBaseOperator:
                     ShoppingHistoryID INTEGER,
                     FoodDataID INTEGER,
                     Grams REAL,
-                    FOREIGN KEY (ShoppingID) REFERENCES ShoppingHistory(ShoppingHistoryID),
+                    FOREIGN KEY (ShoppingHistoryID) REFERENCES ShoppingHistory(ShoppingHistoryID),
                     FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
                 )
             ''')

@@ -31,8 +31,11 @@ class BackEndOperator():
         return self.df_dict
     
     def add_cooking(self, df_food_and_grams, df_cooking_attributes):
+        """
+        「料理の登録（但し実際に食材を消費して料理を作りはしない）」に相当する操作
+        """
         # DB上に同じ食材構成のCookingがあるかを判別する。
-        cooking_id = self.__gen_cooking_details_list(df_food_and_grams)
+        cooking_id = self.__judge_same_cooking_already_exist(df_food_and_grams)
         if cooking_id != None:
             # 既に同じ料理が登録されている状態。TODO: 何らかユーザーにメッセージで通知する。
             pass
@@ -45,8 +48,10 @@ class BackEndOperator():
             self.__push_df_to_db_by_append("CookingFoodData", df_food_and_grams)
         return cooking_id
     
-    def add_cooking_history(self, df_food_and_grams, df_cooking_attributes):
-        cooking_id = self.add_cooking(df_food_and_grams, df_cooking_attributes)
+    def add_cooking_history(self, cooking_id):
+        """
+        「料理を実際に作る」に相当する操作
+        """
         new_cooking_history_id = self.__issue_new_id(self.df_dict["CookingHistory"]['CookingHistoryID'].tolist())
 
         dict = []
@@ -56,8 +61,6 @@ class BackEndOperator():
 
         # TODO : 使った材料の分だけ冷蔵庫から減らす
         return
-
-
 
     #________________________________________________________________________________________________________________________
     # private関数群
@@ -87,6 +90,10 @@ class BackEndOperator():
         return
     
     def __issue_new_id(self, existing_id_list):
+        """
+        既存のIDのリストを入力に取り、既存のIDとは被らない新しいIDを発行する。
+        このとき、なるべく小さい値を新しいIDとして発行する。
+        """
         if len(existing_id_list) == 0:
             return 0
         id_max = max(existing_id_list)
@@ -97,8 +104,13 @@ class BackEndOperator():
                 return i
         return id_max+1
     
-    def __gen_cooking_details_list(self, df_in):
-        df1 = df_in[['FoodDataID', 'Grams']]
+    def __judge_same_cooking_already_exist(self, df_food_and_grams):
+        """
+        食材のID・量の一覧から、同じ組成のCookingが既に存在しているかを判別する。
+        もし存在している場合、該当するCookingIDを返す。
+        存在していない場合、Noneを返す。
+        """
+        df1 = df_food_and_grams[['FoodDataID', 'Grams']]
         df1['Grams'] = df1['Grams'].astype(float)
 
         df_c = self.df_dict["Cooking"]
@@ -114,11 +126,6 @@ class BackEndOperator():
             if are_equal:
                 return id
         return None
-                    
-
-
-
-    
 
 #________________________________________________________________________________________________________________________
 if __name__ == "__main__":

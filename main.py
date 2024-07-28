@@ -95,7 +95,7 @@ def sample_demo(backend_op, frontend_op):
         - 既にCookingに同じ組成の料理があれば、新しくCookingには登録されない。
     -  以下、例として別の料理「ペペロンチーノ」を作成する。
         - 同じく入力は「df_food_and_grams」「df_cooking_attributes」の2つである。
-        - backend_op.add_cooking_history()を呼び出す。
+        - add_cookingを読んだ後に別の関数「add_cooking_history」を呼ぶ。（2回関数を呼ぶ）
         - これら2つの変数は本来はStreamLitのUI操作で生成するが、今回はサンプルとして直に生成する。
     """
     print("=========「使い勝手(2)のデモ」==========")
@@ -111,7 +111,8 @@ def sample_demo(backend_op, frontend_op):
     df_cooking_attributes = pd.DataFrame(dict)
 
     # 料理を作成する
-    backend_op.add_cooking_history(df_food_and_grams, df_cooking_attributes)
+    cooking_id = backend_op.add_cooking(df_food_and_grams, df_cooking_attributes)
+    backend_op.add_cooking_history(cooking_id)
 
     ### 操作後のDataBaseはこちら
     print("### 操作後のDataBaseはこちら ###")
