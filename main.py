@@ -23,11 +23,12 @@ def main():
     
     frontend_op = frontend_main.FrontEndOperator(df_dict)
 
-    # 説明用デモ1
-    sample_demo(backend_op, frontend_op)
+    # <<< 説明用デモ1 >>>
+    # sample_demo(backend_op, frontend_op)
 
-    # 説明用デモ2（とりあえずDataBaseの内容全てをブラウザに表示）
-    frontend_op.sample_show_all_df() 
+    # <<< 説明用デモ2 >>>（とりあえずDataBaseの内容全てをブラウザに表示）
+    # コメントアウトして、streamlit run main.py で実行できます。
+    # frontend_op.sample_show_all_df() 
 
 #________________________________________________________________________________________________________________________
 def sample_demo(backend_op, frontend_op):
@@ -46,7 +47,7 @@ def sample_demo(backend_op, frontend_op):
         - これら2つの変数は本来はStreamLitのUI操作で生成するが、今回はサンプルとして直に生成する。
     """
     print("=========「使い勝手(1)のデモ」==========")
-    print("◆◆◆操作前のDataBaseはこちら◆◆◆")
+    print("### 操作前のDataBaseはこちら ###")
     df_dict = backend_op.get_df_from_db()
     print("【Cookingテーブル】")
     print(df_dict["Cooking"])
@@ -75,7 +76,7 @@ def sample_demo(backend_op, frontend_op):
     backend_op.add_cooking(df_food_and_grams, df_cooking_attributes)
 
     ### 操作後のDataBaseはこちら
-    print("◆◆◆操作後のDataBaseはこちら◆◆◆")
+    print("### 操作後のDataBaseはこちら ###")
     df_dict = backend_op.get_df_from_db()
     print("【Cookingテーブル】")
     print(df_dict["Cooking"])
@@ -112,7 +113,7 @@ def sample_demo(backend_op, frontend_op):
     backend_op.add_cooking_history(df_food_and_grams, df_cooking_attributes)
 
     ### 操作後のDataBaseはこちら
-    print("◆◆◆操作後のDataBaseはこちら◆◆◆")
+    print("### 操作後のDataBaseはこちら ###")
     df_dict = backend_op.get_df_from_db()
     print("【Cookingテーブル】")
     print(df_dict["Cooking"])
