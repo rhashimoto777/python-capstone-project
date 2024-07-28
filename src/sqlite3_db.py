@@ -1,16 +1,29 @@
+import common
 import sqlite3
 import os
-import common
+import json
+import pandas as pd
 
 def init():
     """
     初回起動時の処理
     """
     _create_db()
+    _load_fooddata_json()
     return
 
-def _load_food_data():
-    pass
+def _load_fooddata_json():
+    os.chdir(common.FOODDATA_JSON_PATH)
+    with open(common.FOODDATA_JSON_FILENAME, "r", encoding='utf-8') as file:
+        data = json.load(file)
+    df = pd.DataFrame(data)
+    print(df)
+
+    
+    os.chdir(common.DB_PATH)
+    with sqlite3.connect(common.DB_FILENAME) as conn:
+        df.to_sql('FoodData', conn, if_exists='append', index=False)
+    return
 
 
 def _create_db():

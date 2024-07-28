@@ -16,7 +16,6 @@ def init_process():
     """
     初回起動時の処理
     """
-    # ユーザーIDの概念は今後の拡張に備えたものであり、現実装においては「user_default」以外のユーザーは存在しないとする。
     common.init() 
     fooddata.init()
     sqlite3_db.init()
