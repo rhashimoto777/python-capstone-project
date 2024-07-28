@@ -1,5 +1,7 @@
 import sys
 import os
+from datetime import datetime
+import pandas as pd
 
 # subfolderをモジュール検索パスに追加
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,9 +19,104 @@ class BackEndOperator():
         common.init() 
         fooddata.init()
         self.db_operator = sqlite_db.DataBaseOperator()
+        self.__pull_df_from_db()
 
+    #________________________________________________________________________________________________________________________
+    # global関数群
     def get_df_from_db(self):
-        return self.db_operator.get_df_from_db()
+        """
+        classの外側にDBに対応するDataFrameを返す。
+        """
+        self.__pull_df_from_db()
+        return self.df_dict
+    
+    def add_cooking(self, df_food_and_grams, df_cooking_attributes):
+        # DB上に同じ食材構成のCookingがあるかを判別する。
+        cooking_id = self.__gen_cooking_details_list(df_food_and_grams)
+        if cooking_id != None:
+            # 既に同じ料理が登録されている状態。TODO: 何らかユーザーにメッセージで通知する。
+            pass
+        else:
+            new_cooking_id = self.__issue_new_id(self.df_dict["Cooking"]['CookingID'].tolist())
+            df_cooking_attributes["CookingID"] = new_cooking_id
+            self.__push_df_to_db_by_append("Cooking", df_cooking_attributes)
+
+            df_food_and_grams["CookingID"] = new_cooking_id
+            self.__push_df_to_db_by_append("CookingFoodData", df_food_and_grams)
+        return cooking_id
+    
+    def add_cooking_history(self, df_food_and_grams, df_cooking_attributes):
+        cooking_id = self.add_cooking(df_food_and_grams, df_cooking_attributes)
+        new_cooking_history_id = self.__issue_new_id(self.df_dict["CookingHistory"]['CookingHistoryID'].tolist())
+
+        dict = []
+        dict.append({"CookingHistoryID":new_cooking_history_id, "CookingID":cooking_id, "IssuedDate":datetime.now()})
+        df = pd.DataFrame(dict)
+        self.__push_df_to_db_by_append("CookingHistory",df)
+
+
+
+    #________________________________________________________________________________________________________________________
+    # private関数群
+    def __pull_df_from_db(self):
+        """
+        SQLiteDBをDataFrameに変換し、classのメンバ変数に上書きする。
+        """
+        self.df_dict = self.db_operator.get_df_from_db()
+        return
+    
+    def __push_df_to_db_by_append(self, table_name, df):
+        """
+        dfの分だけ新しい行をtableに加える。
+        append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
+        """
+        self.db_operator.append_dbtable_from_df(table_name, df)
+        self.__pull_df_from_db()
+        return
+    
+    def __push_df_to_db_by_replace(self, table_name, df):
+        """
+        既存のtableを削除し、dfから生成される新しいtableに置き換える。
+        append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
+        """
+        self.db_operator.replace_table_from_df(table_name, df)
+        self.__pull_df_from_db()
+        return
+    
+    def __issue_new_id(self, existing_id_list):
+        if len(existing_id_list) == 0:
+            return 0
+        id_max = max(existing_id_list)
+        for i in range(id_max):
+            if i in existing_id_list:
+                continue
+            else:
+                return i
+        return id_max+1
+    
+    def __gen_cooking_details_list(self, df_in):
+        df1 = df_in[['FoodDataID', 'Grams']]
+        df1['Grams'] = df1['Grams'].astype(float)
+
+        df_c = self.df_dict["Cooking"]
+        cooking_id_list = df_c['CookingID'].tolist()
+        for id in cooking_id_list:
+            df_cfd = self.df_dict["CookingFoodData"]
+            df_c_id = df_cfd[df_cfd['CookingID'] == id]
+            df2 = df_c_id[['FoodDataID', 'Grams']]
+
+            df1_sorted = df1.sort_index(axis=1).sort_values(by=df1.columns.tolist()).reset_index(drop=True)
+            df2_sorted = df2.sort_index(axis=1).sort_values(by=df2.columns.tolist()).reset_index(drop=True)
+            are_equal = df1_sorted.equals(df2_sorted)
+            if are_equal:
+                return id
+        return None
+                    
+
+
+
+    
+
 #________________________________________________________________________________________________________________________
 if __name__ == "__main__":
     # (デバッグ用)
