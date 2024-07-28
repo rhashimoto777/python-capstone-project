@@ -7,13 +7,13 @@ def init():
     初回起動時の処理。
     FoodDataテーブルの元となるjsonファイルを、./dataフォルダの直下に生成する。
     """
-    # 本当はWebサイトをスクレイピングなどできると理想的だが、暫定的にダミーデータを入れる。
     _tentative_gen_json() # TODO：正式な処理に書き換える
     return
 
 def _tentative_gen_json():
     """
     本関数はあくまで骨組み確認用にダミーデータを作る用途であり、正式ファイルではない。
+    本来はWebサイトをスクレイピングしてデータを取得してきたい。
     TODO : 正しい処理が実装されるタイミングで本関数を消すか改名すること。
     """
     name = "FoodName"
@@ -23,7 +23,6 @@ def _tentative_gen_json():
     Cg = "Grams_Carbo"
     SUn = "StandardUnit_Name"
     SUg = "StandardUnit_Grams"
-
 
     d = []
     d.append({name:"鶏もも肉(皮付き)", kcal:190.0, Pg:16.6, Fg:14.2, Cg:0.0, SUn:"100g", SUg:100})
@@ -42,4 +41,5 @@ def _tentative_gen_json():
     os.chdir(common.FOODDATA_JSON_PATH)
     with open(common.FOODDATA_JSON_FILENAME, 'w', encoding='utf-8') as file:
         json.dump(d, file, ensure_ascii=False, indent=4, sort_keys=True)
+    return
     

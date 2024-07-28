@@ -16,8 +16,10 @@ class BackEndOperator():
     def __init__(self):
         common.init() 
         fooddata.init()
-        db_operator = sqlite_db.DataBaseOperator()
+        self.db_operator = sqlite_db.DataBaseOperator()
 
+    def get_df_from_db(self):
+        return self.db_operator.get_df_from_db()
 #________________________________________________________________________________________________________________________
 if __name__ == "__main__":
     # (デバッグ用)
