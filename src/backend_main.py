@@ -54,6 +54,9 @@ class BackEndOperator():
         df = pd.DataFrame(dict)
         self.__push_df_to_db_by_append("CookingHistory",df)
 
+        # TODO : 使った材料の分だけ冷蔵庫から減らす
+        return
+
 
 
     #________________________________________________________________________________________________________________________

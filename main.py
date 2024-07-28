@@ -24,10 +24,11 @@ def main():
     frontend_op = frontend_main.FrontEndOperator(df_dict)
 
     # <<< 説明用デモ1 >>>
-    # sample_demo(backend_op, frontend_op)
+    # python main.pyで実行ください。
+    sample_demo(backend_op, frontend_op)
 
     # <<< 説明用デモ2 >>>（とりあえずDataBaseの内容全てをブラウザに表示）
-    # コメントアウトして、streamlit run main.py で実行できます。
+    # 次の行をコメントアウトして、streamlit run main.py で実行できます。
     # frontend_op.sample_show_all_df() 
 
 #________________________________________________________________________________________________________________________

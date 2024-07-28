@@ -152,7 +152,7 @@ class DataBaseOperator:
             # ShoppingFoodDataテーブルの作成
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS ShoppingFoodData (
-                    ShoppingID INTEGER,
+                    ShoppingHistoryID INTEGER,
                     FoodDataID INTEGER,
                     Grams REAL,
                     FOREIGN KEY (ShoppingID) REFERENCES ShoppingHistory(ShoppingHistoryID),
