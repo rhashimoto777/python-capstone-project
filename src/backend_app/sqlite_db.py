@@ -20,8 +20,7 @@ class DataBaseOperator:
         """
         df_dict = {}
         with self.__get_connection_to_db() as conn:
-            # TODO: この場所でtablesをハードコーディングするのは綺麗ではない。（いろんなところで同じ定義が必要になりそうなので、何らか共通化したい）
-            tables = ['FoodData', 'FoodAmount', 'CookingHistory', 'Cooking', 'CookingFoodAmount', 'Refrigerator', 'ShoppingHistory', 'ShoppingFoodAmount']
+            tables = ['FoodData', 'CookingFoodData', 'Cooking', 'CookingHistory', 'Refrigerator', 'ShoppingFoodData', 'ShoppingHistory']
 
             # DataFrameに変換
             for table_name in tables:
@@ -30,13 +29,24 @@ class DataBaseOperator:
                 df_dict[table_name] = df
         return df_dict
     
-    def replace_dbtable_from_df(self, table_name, df):
+    def replace_table_from_df(self, table_name, df):
         """
-        DataFrameをDBに書き込む
+        DataFrameをDBに書き込む (既存のtableを削除し、新しいtableに置き換える)
         """
         try:
             with self.__get_connection_to_db() as conn:
                 df.to_sql(table_name, conn, if_exists='replace', index=False)
+        except Exception as e:
+            print(f'Error : {e}')
+        return
+    
+    def append_dbtable_from_df(self, table_name, df):
+        """
+        DataFrameをDBに書き込む (既存のtableは残し、dfの分だけ新しい行を追加する)
+        """
+        try:
+            with self.__get_connection_to_db() as conn:
+                df.to_sql(table_name, conn, if_exists='append', index=False)
         except Exception as e:
             print(f'Error : {e}')
         return
@@ -98,30 +108,14 @@ class DataBaseOperator:
                 )
             ''')
 
-            # FoodAmountテーブルの作成
+            # CookingFoodDataテーブルの作成
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS FoodAmount (
-                    FoodAmountID INTEGER PRIMARY KEY,
-                    FoodDataID INTEGER,
-                    Grams_Total REAL,
-                    Grams_Protein REAL,
-                    Grams_Fat REAL,
-                    Grams_Carbo REAL,
-                    Calory_Total REAL,
-                    Calory_Protein REAL,
-                    Calory_Fat REAL,
-                    Calory_Carbo REAL,
-                    FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
-                )
-            ''')
-
-            # CookingHistoryテーブルの作成
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS CookingHistory (
-                    CookingHistoryID INTEGER PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS CookingFoodData (
                     CookingID INTEGER,
-                    IssuedDate DATETIME,
-                    FOREIGN KEY (CookingID) REFERENCES Cooking(CookingID)
+                    FoodDataID INTEGER,
+                    Grams REAL,
+                    FOREIGN KEY (CookingID) REFERENCES Cooking(CookingID),
+                    FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
                 )
             ''')
 
@@ -136,21 +130,33 @@ class DataBaseOperator:
                 )
             ''')
 
-            # CookingFoodAmountテーブルの作成
+            # CookingHistoryテーブルの作成
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS CookingFoodAmount (
+                CREATE TABLE IF NOT EXISTS CookingHistory (
+                    CookingHistoryID INTEGER PRIMARY KEY,
                     CookingID INTEGER,
-                    FoodAmountID INTEGER,
-                    FOREIGN KEY (CookingID) REFERENCES Cooking(CookingID),
-                    FOREIGN KEY (FoodAmountID) REFERENCES FoodAmount(FoodAmountID)
+                    IssuedDate DATETIME,
+                    FOREIGN KEY (CookingID) REFERENCES Cooking(CookingID)
                 )
             ''')
 
             # Refrigeratorテーブルの作成
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Refrigerator (
-                    FoodAmountID INTEGER,
-                    FOREIGN KEY (FoodAmountID) REFERENCES FoodAmount(FoodAmountID)
+                    FoodDataID INTEGER,
+                    Grams REAL,
+                    FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
+                )
+            ''')
+
+            # ShoppingFoodDataテーブルの作成
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS ShoppingFoodData (
+                    ShoppingID INTEGER,
+                    FoodDataID INTEGER,
+                    Grams REAL,
+                    FOREIGN KEY (ShoppingID) REFERENCES ShoppingHistory(ShoppingHistoryID),
+                    FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
                 )
             ''')
 
@@ -159,16 +165,6 @@ class DataBaseOperator:
                 CREATE TABLE IF NOT EXISTS ShoppingHistory (
                     ShoppingHistoryID INTEGER PRIMARY KEY,
                     IssuedDate DATETIME
-                )
-            ''')
-
-            # ShoppingFoodAmountテーブルの作成
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS ShoppingFoodAmount (
-                    ShoppingID INTEGER,
-                    FoodAmountID INTEGER,
-                    FOREIGN KEY (ShoppingID) REFERENCES ShoppingHistory(ShoppingHistoryID),
-                    FOREIGN KEY (FoodAmountID) REFERENCES FoodAmount(FoodAmountID)
                 )
             ''')
         return
