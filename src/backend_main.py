@@ -6,32 +6,19 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 subfolder_path = os.path.join(current_dir, 'backend_app')
 sys.path.insert(0, subfolder_path)
 
-# back-end_appフォルダ内の.pyをインポート
-import sqlite3_db
-import backend_common as common
+# backend_appフォルダ内の.pyをインポート
+import sqlite_db
 import fooddata
-
-class BackEndMain():
-    def __init__(self):
-        pass
-
+import backend_common as common
 
 #________________________________________________________________________________________________________________________
-def init_process():
-    """
-    初回起動時の処理
-    """
-    common.init() 
-    fooddata.init()
-    sqlite3_db.init()
+class BackEndOperator():
+    def __init__(self):
+        common.init() 
+        fooddata.init()
+        db_operator = sqlite_db.DataBaseOperator()
 
-def main():
-    """
-    メイン処理
-    """
-    pass
-    
 #________________________________________________________________________________________________________________________
 if __name__ == "__main__":
-    init_process()
-    main()
+    # (デバッグ用)
+    backend = BackEndOperator()

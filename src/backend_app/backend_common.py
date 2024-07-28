@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 ROOT_PATH = None
 DB_PATH = None
@@ -35,7 +36,7 @@ def _gen_fooddata_json_path_and_name():
     """
     global FOODDATA_JSON_PATH
     global FOODDATA_JSON_FILENAME
-    FOODDATA_JSON_PATH = f'{ROOT_PATH}/data'
+    FOODDATA_JSON_PATH = os.path.join(ROOT_PATH, 'data')
     FOODDATA_JSON_FILENAME = 'fooddata.json'
     return
 
@@ -47,7 +48,7 @@ def _gen_db_path_and_name(user_id):
     """
     global DB_PATH
     global DB_FILENAME
-    DB_PATH = f'{ROOT_PATH}/data/{user_id}'
+    DB_PATH = os.path.join(ROOT_PATH, 'data', user_id)
     DB_FILENAME = 'cooking_system.db'
     return
 

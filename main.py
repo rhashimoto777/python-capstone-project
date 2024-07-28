@@ -8,25 +8,14 @@ sys.path.insert(0, subfolder_path)
 
 # srcフォルダ内の.pyをインポート
 import backend_main
-import common
-import fooddata
 
 #________________________________________________________________________________________________________________________
-def init_process():
-    """
-    初回起動時の処理
-    """
-    common.init() 
-    fooddata.init()
-    sqlite3_db.init()
-
 def main():
     """
     メイン処理
     """
-    pass
+    backend_op = backend_main.BackEndOperator()
     
 #________________________________________________________________________________________________________________________
 if __name__ == "__main__":
-    init_process()
     main()
