@@ -1,6 +1,6 @@
-# ＜「今回実施するテーマ」のSQLiteデータベース＞
+# 「今回実施するテーマ」のSQLiteデータベース
 
-## ER図
+### 【ER図】
 
 ![ER図](../pic/SQLiteDB：今回実施するテーマ.png)
 
@@ -70,10 +70,11 @@ FoodAmountID int FK > FoodAmount.FoodAmountID
 
 </details>
 
+---
 
-# ＜参考：「MS1上の元々のテーマ1」のSQLiteデータベース＞
+# 参考：「MS1上の元々のテーマ1」のSQLiteデータベース
 
-## ER図
+### 【ER図】
 
 ![ER図](../pic/SQLiteDB：MS1上の元々のテーマ1.png)
 
