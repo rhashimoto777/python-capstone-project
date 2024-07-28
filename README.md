@@ -23,14 +23,34 @@
 - **GitHub Repository管理**
     - mainへの直接pushを禁止する設定にしている．mainに変更を加えるには別branchを作ってPullRequestを発行する．
     - PullRequestのマージには1人以上のレビュワー承認を必要とする．
-        - デフォルトレビュワーとして下記メンバが自動追加されるが，その他メンバの承認でもマージ可能な設定にしている．
+        - デフォルトレビュワーとして下記メンバが自動追加されるが，その他メンバの承認でもマージ可能な設定にしている．（不在時などの緊急用措置なので，基本的にはデフォルトレビュワーから承認されることを目指す）
             ```
             ・全てのファイル変更：橋本
             ・ユーザーストーリー.mdの変更：尾崎
             ```
+    - デフォルトのPRマージ方法は `Squash and merge` とする．
+        - メリデメあるものの，あるPRで破壊的な変更が入ったケースにおいて要因となるPRを特定しやすい利点を重視した．
+        - 1つのPRの規模は大きくなりすぎないようにすることが望ましい．
 
 - **進捗・残件管理**
     - 水曜・金曜のスタンドアップミーティングで状況を確認する．
         - [参考：MS1上のスタンドアップミーティングのガイドライン](https://app.ms1.com/academy/1BYJipoSWFWcxfxUIoruQ6/4NBJkylZbtUd6Wxtpw4nbE/5VDANh8J5d2NltgkZUPyTk/5pbSGNRYpiaKlCctj9PaET/jBpJOZ9FVVT7qyahWPMEk)
     - スタンドアップミーティング以外でも，可能な限り「着手状況」「困りごと」などをslackで共有し，状況の透明化を目指す．
         - [参考：プロジェクトの潜在的な課題とリスク](https://github.com/rhashimoto777/python-capstone-project/blob/main/doc/%E4%BF%AE%E4%BA%86%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E8%A8%88%E7%94%BB.md#%E8%AA%B2%E9%A1%8C%E3%81%A8%E3%83%AA%E3%82%B9%E3%82%AF)
+
+#### ＜環境セットアップ＞
+
+- [MS1上の修了プロジェクトのガイドライン](https://app.ms1.com/academy/1BYJipoSWFWcxfxUIoruQ6/4NBJkylZbtUd6Wxtpw4nbE/5VDANh8J5d2NltgkZUPyTk/5pbSGNRYpiaKlCctj9PaET/jBpJOZ9FVVT7qyahWPMEk)の記載を抜粋：
+  > リポジトリのREADMEに必要なすべての手順を記述し、誰でも自分のシステムでプロダクトをセットアップして実行できるようにしてください。
+
+- **環境概要**
+    - 想定するpython version
+      ```
+      3.11.0
+      ```
+    - 使用するライブラリ
+      ```
+      TBD
+      ```
+
+- [参考：Python学習パスのシステムセットアップガイド -  受講者用.pdf](https://toyotaglobal.enterprise.slack.com/files/U04M3KX6CP2/F06L1JN74N7/python___________________________________________________________________-______________.pdf)
