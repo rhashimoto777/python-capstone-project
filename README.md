@@ -12,6 +12,7 @@
 
 #### ＜作業用インフラ＞
 - **JIRA**：[チームのJIRAボード](https://rhdojo.atlassian.net/jira/software/projects/PCPG/boards/2)
+  - サブチケットを含めた一覧はこちら：[Confluence：ストーリーとサブチケットの一覧](https://rhdojo.atlassian.net/wiki/spaces/~712020ca0f8221407b440b8d4c1a0660e8be32/pages/14188549/JIRA)
 - **GitHub Wiki**：[議事録ページ](https://github.com/rhashimoto777/python-capstone-project/wiki/%E8%AD%B0%E4%BA%8B%E9%8C%B2) 、 [TIPS(ノウハウ共有)](https://github.com/rhashimoto777/python-capstone-project/wiki/TIPS%EF%BC%88%E3%83%8E%E3%82%A6%E3%83%8F%E3%82%A6%E5%85%B1%E6%9C%89%EF%BC%89)
 
 <br>

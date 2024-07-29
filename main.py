@@ -19,19 +19,39 @@ def main():
     メイン処理
     """
     backend_op = backend_main.BackEndOperator()
+    temp_add_refrigerator_food(backend_op)
+
     df_dict = backend_op.get_df_from_db()
-    
     frontend_op = frontend_main.FrontEndOperator(df_dict)
 
     # <<< 説明用デモ1 >>>
     # python main.pyで実行ください。
-    sample_demo(backend_op, frontend_op)
+    # sample_demo(backend_op, frontend_op)
 
     # <<< 説明用デモ2 >>>（とりあえずDataBaseの内容全てをブラウザに表示）
     # 次の行をコメントアウトして、streamlit run main.py で実行できます。
     # frontend_op.sample_show_all_df() 
 
 #________________________________________________________________________________________________________________________
+def temp_add_refrigerator_food(backend_op):
+    """
+    暫定実装、当面のテスト動作用：
+    とりあえず冷蔵庫の中身に全ての食材を100単位ずつ追加する
+    """
+    df_dict = backend_op.get_df_from_db()
+    df_fooddata = df_dict["FoodData"]
+    
+    dict_refrigerator = []
+    for i in range(len(df_fooddata)):
+        food = df_fooddata.iloc[i]
+        id = food.loc["FoodDataID"]
+        grams_to_add = 100 * food.loc["StandardUnit_Grams"]
+        dict_refrigerator.append({"FoodDataID":id, "Grams":grams_to_add})
+    df_refrigerator = pd.DataFrame(dict_refrigerator)
+    backend_op.replace_refrigerator(df_refrigerator)
+    return
+
+
 def sample_demo(backend_op, frontend_op):
     """
     データの流れやIFの説明用のデモ関数です (実開発が軌道に乗ったら削除します)。
