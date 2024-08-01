@@ -3,10 +3,11 @@ import pandas as pd
 import sqlite3
 
 # SQLiteデータベースファイルへのパス
-db_path = 'cooking_system.db'  # データベースファイルのパスを指定します
+db_path = '../../data/user_default/cooking_system.db'  # データベースファイルのパスを指定します
 
 # SQLiteデータベースに接続
 conn = sqlite3.connect(db_path)
+
 
 # SQLクエリを使って'Refrigerator'のテーブルをDataFrameとして読み込む
 table_name = 'Refrigerator'  # 取得したいテーブルの名前を指定します
