@@ -21,16 +21,26 @@ def main():
     backend_op = backend_main.BackEndOperator()
     temp_add_refrigerator_food(backend_op)
 
+    # DataBaseの各テーブルのDataframeに対応する辞書を取得する
     df_dict = backend_op.get_df_from_db()
+
+
+    cooking_details = backend_op.get_cooking_details()
+
+    
     frontend_op = frontend_main.FrontEndOperator(df_dict)
 
-    # <<< 説明用デモ1 >>>
+    # <<< 説明用デモ1 >>> : backendへの基本的な操作
     # python main.pyで実行ください。
     # sample_demo(backend_op, frontend_op)
 
-    # <<< 説明用デモ2 >>>（とりあえずDataBaseの内容全てをブラウザに表示）
+    # <<< 説明用デモ2 >>> :（とりあえずDataBaseの内容全てをブラウザに表示）
     # 次の行をコメントアウトして、streamlit run main.py で実行できます。
     # frontend_op.sample_show_all_df() 
+
+    # <<< 説明用デモ3 >>> : Cookingの詳細情報の取得
+    # sample_get_cooking_details(cooking_details)
+
 
 #________________________________________________________________________________________________________________________
 def temp_add_refrigerator_food(backend_op):
@@ -50,6 +60,34 @@ def temp_add_refrigerator_food(backend_op):
     df_refrigerator = pd.DataFrame(dict_refrigerator)
     backend_op.replace_refrigerator(df_refrigerator)
     return
+
+def sample_get_cooking_details(cooking_details):
+    """
+    JIRAチケット「PCPG-13」に対応する、
+    『CookingIDごとの「料理の総カロリー」、「PFCそれぞれのグラム量」、「PFCそれぞれのカロリー量」』
+    に相当する情報の取得方法とデータ利用方法についてのデモ。
+    """
+    # cooking_details = backend_op.get_cooking_details() でデータ取得する。
+    # 「cooking_details」の型の詳細は、backend_op.get_cooking_details()を直接見るのが詳細だが、本関数で簡単にデモとして内容を表示する。
+
+    for cooking_details_elem in cooking_details:
+        # cooking_detailsは、辞書型のリストになっている。1つ1つの辞書要素が個別のCookingIDに対応する。
+
+        # CookingIDの取得
+        cooking_id = cooking_details_elem["CookingID"] 
+        print(f'\n=========== CookingID : {cooking_id} ===========')
+
+        # CookingAttributeは、料理の総カロリー、総P/F/C含有量、総P/F/Cカロリー等を含む。
+        # この情報を用いれば、総カロリーに占める Protein / Fat / Carbo 比、いわゆるPFCバランスを計算できる。
+        cooking_attribute = cooking_details_elem["CookingAttribute"]
+        print(" <<<< CookingAttribute >>>>")
+        print(cooking_attribute)
+
+        # FoodAttributeは、料理を構成する食材ごとのカロリー・P/F/C含有量、P/F/Cカロリーを含む。
+        # この情報を用いれば、例えば「料理全体の脂質カロリーは何の食材によるところが大きいか」などが分析できる。
+        food_attribute = cooking_details_elem["FoodAttribute"]
+        print(" <<<< FoodAttribute >>>>")
+        print(food_attribute)
 
 
 def sample_demo(backend_op, frontend_op):
