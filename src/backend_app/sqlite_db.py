@@ -4,9 +4,11 @@ import os
 import json
 import pandas as pd
 from contextlib import contextmanager
+import shutil
 
 class DataBaseOperator:
     def __init__(self) -> None:
+        self.__restore_db_file_from_backup()
         self.__create_db()
         self.__load_fooddata_json()
         return
@@ -53,6 +55,24 @@ class DataBaseOperator:
 
     #________________________________________________________________________________________________________________________
     # private関数群
+    @staticmethod
+    def __restore_db_file_from_backup():
+        """
+        DBのバックアップファイルが存在し、かつcooking_system.dbが存在しないとき、バックアップからコピーしてcooking_system.dbを作る。
+        「cooking_system.dbは実行状態に依存して頻繁に変わるため.gitignoreに登録しているが、一方でGitHub上にデフォルトのDBは登録しておきたい」
+        という背景から本関数を用意している。 (主に初回起動時に1回だけcallすることを想定している)
+        """
+        src = os.path.join(common.DB_PATH, common.DB_BACKUP_FILENAME)   # コピー元ファイル (=バックアップファイル)
+        dst = os.path.join(common.DB_PATH, common.DB_FILENAME)          # コピー先ファイル
+        is_src_file_exist = os.path.exists(src)
+        is_dst_file_exist = os.path.exists(dst)
+
+        if is_src_file_exist and (not is_dst_file_exist):
+            # バックアップファイルが存在し、かつコピー先ファイルが存在しない場合のみ、バックアップファイルをコピーしてDBファイルを作る
+            shutil.copy(src, dst) 
+            common.system_msg_print(f'Restored "{common.DB_FILENAME}" from "{common.DB_BACKUP_FILENAME}"')
+        return
+
     @contextmanager
     def __get_connection_to_db(self):
         """
