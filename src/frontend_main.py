@@ -10,7 +10,7 @@ sys.path.insert(0, subfolder_path)
 # frontend_appフォルダ内の.pyをインポート
 import frontend_common as common
 
-#________________________________________________________________________________________________________________________
+##_________________________________________________________________________________________________
 class FrontEndOperator():
     def __init__(self, initial_df_dict) -> None:
         self.df_dict = initial_df_dict
