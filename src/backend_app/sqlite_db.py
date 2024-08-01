@@ -91,18 +91,40 @@ class DataBaseOperator:
         """
         FoodDataのjsonを読み込み、DBのFoodDataテーブルに書き込む。
         起動時1回しか読まない想定なのでprivate関数にしておく。
+
+        また、P/F/Cのグラム数を単純に4/9/4倍すると、P/F/Cの合計カロリーが総カロリーを超えることがある。
+        これは明らかに不整合であり、「P/F/Cのグラム数」「P/F/Cのカロリー」「食材の総カロリー」の
+        いずれかを補正する必要があるが、総カロリーを補正する方針とする。
         """
         # jsonの読み込み
         os.chdir(common.FOODDATA_JSON_PATH)
         with open(common.FOODDATA_JSON_FILENAME, "r", encoding='utf-8') as file:
             data = json.load(file)
         df = pd.DataFrame(data)
+        
+        # Protein / Fat / Carbo由来のカロリーを計算する
+        df['Calory_Protein'] = df['Grams_Protein'] * 4.0
+        df['Calory_Fat']     = df['Grams_Fat']     * 9.0
+        df['Calory_Carbo']   = df['Grams_Carbo']   * 4.0
+
+        # P/F/Cの合計カロリーが総カロリーを超えないよう、総カロリーを補正する。
+        df['tmp_Calory_PFC'] = df['Calory_Protein'] + df['Calory_Fat'] + df['Calory_Carbo']
+        mask = df['tmp_Calory_PFC'] > df['Calory_Total']
+        for i in range(len(df[mask])):
+            # システムメッセージを表示する
+            elem = df[mask].iloc[i]
+            msg =  f'FoodDataテーブルにおいて、'
+            msg += f'「{elem.loc["FoodName"]}」の「PFC合計カロリー({elem.loc["tmp_Calory_PFC"]:.1f})」が'
+            msg += f'「食材の総カロリー({elem.loc["Calory_Total"]:.1f})」を超えています。'
+            msg += f'値の整合のため、「総カロリー」を{elem.loc["tmp_Calory_PFC"]:.1f}に置き換えます。'
+            common.system_msg_print(msg)
+        df.loc[mask, 'Calory_Total'] = df.loc[mask, 'tmp_Calory_PFC']
+        df = df.drop(columns=['tmp_Calory_PFC'])
 
         # DBのFoodDataテーブルへの書き込み
         with self.__get_connection_to_db() as conn:
             df.to_sql('FoodData', conn, if_exists='replace', index=False)
         return
-
 
     def __create_db(self):
         """
@@ -123,6 +145,9 @@ class DataBaseOperator:
                     Grams_Protein REAL,
                     Grams_Fat REAL,
                     Grams_Carbo REAL,
+                    Calory_Protein REAL,
+                    Calory_Fat REAL,
+                    Calory_Carbo REAL,
                     StandardUnit_Name TEXT,
                     StandardUnit_Grams REAL
                 )
