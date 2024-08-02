@@ -22,11 +22,9 @@ def main():
     temp_add_refrigerator_food(backend_op)
 
     df_dict = backend_op.get_df_from_db()
-    df_refrigerator = df_dict["Refrigerator"]
-    df_fooddata = df_dict["FoodData"]
     
-    frontend_op = frontend_main.FrontEndOperator(df_refrigerator, df_fooddata)
-    frontend_op.show_refrigerator_fooddata_df(df_refrigerator, df_fooddata) 
+    show_refrigerator_fooddata(backend_op)
+
 
     # <<< 説明用デモ1 >>>
     # python main.pyで実行ください。
@@ -37,6 +35,17 @@ def main():
     # frontend_op.sample_show_all_df() 
     
 #________________________________________________________________________________________________________________________
+def show_refrigerator_fooddata(backend_op):
+    
+    df_dict = backend_op.get_df_from_db()
+    df_refrigerator = df_dict["Refrigerator"]
+    df_fooddata = df_dict["FoodData"]
+    
+    frontend_op = frontend_main.FrontEndOperatorRefrigeratorFooddata(df_refrigerator, df_fooddata)
+    frontend_op.show_refrigerator_fooddata_df(df_refrigerator, df_fooddata) 
+    return
+
+
 def temp_add_refrigerator_food(backend_op):
     """
     暫定実装、当面のテスト動作用：

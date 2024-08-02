@@ -13,6 +13,22 @@ import frontend_common as common
 
 #________________________________________________________________________________________________________________________
 class FrontEndOperator():
+    def __init__(self, initial_df_dict) -> None:
+        self.df_dict = initial_df_dict
+        return
+
+    def update_df_dict(self, df_dict):
+        self.df_dict = df_dict
+        return
+    
+    def sample_show_all_df(self):
+        table_name_list = list(self.df_dict.keys())
+        for table in table_name_list:
+            st.header(f"Table: {table}")
+            df = self.df_dict[table]
+            st.dataframe(df)
+
+class FrontEndOperatorRefrigeratorFooddata():
     def __init__(self, initial_df_dict, second_df_dict) -> None:
         self.df_dict1 = initial_df_dict
         self.df_dict2 = second_df_dict
@@ -23,13 +39,6 @@ class FrontEndOperator():
         self.df_dict2 = df_dict2
         return
     
-    def sample_show_all_df(self):
-        table_name_list = list(self.df_dict.keys())
-        for table in table_name_list:
-            st.header(f"Table: {table}")
-            df = self.df_dict[table]
-            st.dataframe(df)
-    
     def show_refrigerator_fooddata_df(self, df_dict_refrigerator, df_dict_fooddata) :
         
         # Streamlitを使ってDataFrameを表示
@@ -38,5 +47,6 @@ class FrontEndOperator():
         df_dict_refrigerator_fooddata = pd.merge(df_dict_refrigerator, df_dict_fooddata, how='inner')
         st.dataframe(df_dict_refrigerator_fooddata)
         return
+
 
 
