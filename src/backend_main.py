@@ -30,6 +30,55 @@ class BackEndOperator():
         self.__pull_df_from_db()
         return self.df_dict
     
+    def get_cooking_details(self):
+        """
+        Gookingごとの総カロリー・総P/F/C量などの情報を返す。
+        出力は辞書型の中にDataFrameが入った形とする。
+        """
+        self.__pull_df_from_db()
+        # DB由来のDataFrameを取得
+        df_c = self.df_dict["Cooking"]
+        df_cf = self.df_dict["CookingFoodData"]
+        df_f = self.df_dict["FoodData"]
+
+        cooking_id_list = df_c['CookingID'].tolist()
+        ret = []
+        for c_id in cooking_id_list:
+            ########### (1) あるCookingIDを持つCookingを構成する、食材ごとのカロリー情報を生成する ########### 
+            df_f_attr = df_cf[df_cf['CookingID'] == c_id].merge(df_f, on="FoodDataID")
+            df_f_attr["Num_StandardUnit"]       = df_f_attr["Grams"] / df_f_attr["StandardUnit_Grams"]
+
+            # P/F/C のグラム情報
+            df_f_attr["CookingGrams_Protein"]   = df_f_attr["Num_StandardUnit"] * df_f_attr['Grams_Protein']
+            df_f_attr["CookingGrams_Fat"]       = df_f_attr["Num_StandardUnit"] * df_f_attr['Grams_Fat']
+            df_f_attr["CookingGrams_Carbo"]     = df_f_attr["Num_StandardUnit"] * df_f_attr['Grams_Carbo']
+
+            # カロリー情報
+            df_f_attr["CookingCalory_Total"]    = df_f_attr["Num_StandardUnit"] * df_f_attr['Calory_Total']
+            # TODO : P/F/Cのgram-->caloryの変換は、何らか共通関数化する。
+            # TODO : P/F/Cのカロリー合計が総カロリーを超えることがある。issue-7で対応予定。
+            df_f_attr["CookingCalory_Carbo"]    = df_f_attr['CookingGrams_Carbo']   * 4.0 
+            df_f_attr["CookingCalory_Fat"]      = df_f_attr['CookingGrams_Fat']     * 9.0
+            df_f_attr["CookingCalory_Protein"]  = df_f_attr['CookingGrams_Protein'] * 4.0
+
+            # 不要な列を削除する。（他のテーブル等と完全に重複する情報は削除する）
+            df_f_attr = df_f_attr.drop(columns=['CookingID','Calory_Total', 'Grams_Carbo', 'Grams_Fat','Grams_Protein'])
+
+            ########### (2) あるCookingIDを持つCookingを構成する、総カロリー情報を生成する ########### 
+            # TODO : 同一のCookingIDを持つ要素がCookingテーブル内に複数存在しないことを前提にしているが、どこかで保証する必要がある。
+            df_c_attr = df_c[df_c['CookingID'] == c_id]
+            df_c_attr = df_c_attr.drop(columns=['CookingID', 'IsFavorite', 'LastUpdateDate', 'Description'])
+            df_c_attr["CookingCalory_Total"]    = df_f_attr["CookingCalory_Total"].sum()
+            df_c_attr["CookingCalory_Carbo"]    = df_f_attr["CookingCalory_Carbo"].sum()
+            df_c_attr["CookingCalory_Fat"]      = df_f_attr["CookingCalory_Fat"].sum()
+            df_c_attr["CookingCalory_Protein"]  = df_f_attr["CookingCalory_Protein"].sum()
+
+            ########### (3) 返り値に要素を加える ########### 
+            dict = {"CookingID" : c_id, "CookingAttribute" : df_c_attr, "FoodAttribute" : df_f_attr}
+            ret.append(dict)
+        return ret
+
+    
     def add_cooking(self, df_food_and_grams, df_cooking_attributes):
         """
         「料理の登録（但し実際に食材を消費して料理を作りはしない）」に相当する操作
