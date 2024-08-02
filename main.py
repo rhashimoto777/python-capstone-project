@@ -54,15 +54,7 @@ def temp_add_refrigerator_food(backend_op):
     df_refrigerator = pd.DataFrame(dict_refrigerator)
     backend_op.replace_refrigerator(df_refrigerator)
     return
-
-def temp_show_frontend(frontend_op):
-
-    df_dict = backend_op.get_df_from_db()
-    df_fooddata = df_dict["FoodData"]
-    
-    return
-    
-
+ 
 def sample_demo(backend_op, frontend_op):
     """
     データの流れやIFの説明用のデモ関数です (実開発が軌道に乗ったら削除します)。
