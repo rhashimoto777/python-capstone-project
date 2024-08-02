@@ -22,7 +22,11 @@ def main():
     temp_add_refrigerator_food(backend_op)
 
     df_dict = backend_op.get_df_from_db()
-    frontend_op = frontend_main.FrontEndOperator(df_dict)
+    df_refrigerator = df_dict["Refrigerator"]
+    df_fooddata = df_dict["FoodData"]
+    
+    frontend_op = frontend_main.FrontEndOperator(df_refrigerator, df_fooddata)
+    frontend_op.show_refrigerator_fooddata_df(df_refrigerator, df_fooddata) 
 
     # <<< 説明用デモ1 >>>
     # python main.pyで実行ください。
@@ -31,7 +35,7 @@ def main():
     # <<< 説明用デモ2 >>>（とりあえずDataBaseの内容全てをブラウザに表示）
     # 次の行をコメントアウトして、streamlit run main.py で実行できます。
     # frontend_op.sample_show_all_df() 
-
+    
 #________________________________________________________________________________________________________________________
 def temp_add_refrigerator_food(backend_op):
     """
@@ -51,6 +55,13 @@ def temp_add_refrigerator_food(backend_op):
     backend_op.replace_refrigerator(df_refrigerator)
     return
 
+def temp_show_frontend(frontend_op):
+
+    df_dict = backend_op.get_df_from_db()
+    df_fooddata = df_dict["FoodData"]
+    
+    return
+    
 
 def sample_demo(backend_op, frontend_op):
     """
