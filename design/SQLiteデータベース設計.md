@@ -17,6 +17,9 @@ Calory_Total float
 Grams_Protein float
 Grams_Fat float
 Grams_Carbo float
+Calory_Protein float
+Calory_Fat float
+Calory_Carbo float
 StandardUnit_Name text
 StandardUnit_Grams float
 
@@ -82,6 +85,7 @@ IssuedDate DATETIME
     - `Grams_Protein`：「StandardUnit_Grams」あたりのタンパク質量。単位は[g]。
     - `Grams_Fat`：「StandardUnit_Grams」あたりの脂肪量。
     - `Grams_Carbo`：「StandardUnit_Grams」あたりの炭水化物量。単位は[g]。
+    - `Calory_Protein` `Calory_Fat` `Calory_Carbo`： 「StandardUnit_Grams」あたりの各カロリー。単位は[kcal]。グラムからカロリーへの変換を1か所でのみ行うことを確実にするために、FoodData内でP/F/Cのカロリー値も持っておく。
     - `StandardUnit_Name`：その食材の数を表すのに適した名前。例えば卵ならば「1個」、お米なら「1合」、肉なら「100g」など。
     - `StandardUnit_Grams`：「StandardUnit_Name」1つあたりのグラム数。単位は[g]。
 
