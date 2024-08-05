@@ -46,7 +46,33 @@ class FrontEndOperatorRefrigeratorFooddata():
         st.caption('「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。')
         df_dict_refrigerator_fooddata = pd.merge(df_dict_refrigerator, df_dict_fooddata, how='inner')
         st.dataframe(df_dict_refrigerator_fooddata)
+
+        # Streamlitを使って食材選択をスライドバー表示
+        st.sidebar.title("使う食材と数量を選択")
+        # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
+        food_options = df_dict_refrigerator_fooddata['FoodName'].unique().tolist()
+        # 食材を複数選択
+        selected_foods = st.sidebar.multiselect("食材を選んでください", food_options)
+        
+        # 食材に対する数量を入力
+        selected_quantities = {}
+        for food in selected_foods:
+            quantity = st.sidebar.number_input(f"{food}の重量(g)を入力してください", min_value=0, value=1)
+            selected_quantities[food] = quantity
+
+        # 選択した食材と個数を表示
+        st.sidebar.write("選択した食材と重量(g)を確認:")
+        for food, quantity in selected_quantities.items():
+            st.sidebar.write(f"{food}: {quantity}")
+
+        #料理名を登録
+        text = st.sidebar.text_input('新しい料理の料理名を教えてください')
+
+        # 日付入力
+        date = st.sidebar.date_input('Input date')
+       
+        # ボタン
+        st.sidebar.button('料理を登録')
+
         return
-
-
 
