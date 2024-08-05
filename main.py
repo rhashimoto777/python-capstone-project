@@ -24,6 +24,8 @@ def main():
     # DataBaseの各テーブルのDataframeに対応する辞書を取得する
     df_dict = backend_op.get_df_from_db()
 
+    
+    show_refrigerator_fooddata(backend_op)
 
     cooking_details = backend_op.get_cooking_details()
 
@@ -43,6 +45,17 @@ def main():
 
 
 #________________________________________________________________________________________________________________________
+def show_refrigerator_fooddata(backend_op):
+    
+    df_dict = backend_op.get_df_from_db()
+    df_refrigerator = df_dict["Refrigerator"]
+    df_fooddata = df_dict["FoodData"]
+    
+    frontend_op = frontend_main.FrontEndOperatorRefrigeratorFooddata(df_refrigerator, df_fooddata)
+    frontend_op.show_refrigerator_fooddata_df(df_refrigerator, df_fooddata) 
+    return
+
+
 def temp_add_refrigerator_food(backend_op):
     """
     暫定実装、当面のテスト動作用：
@@ -60,6 +73,7 @@ def temp_add_refrigerator_food(backend_op):
     df_refrigerator = pd.DataFrame(dict_refrigerator)
     backend_op.replace_refrigerator(df_refrigerator)
     return
+ 
 
 def sample_get_cooking_details(cooking_details):
     """
