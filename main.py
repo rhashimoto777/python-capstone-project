@@ -26,6 +26,7 @@ def main():
 
     
     show_refrigerator_fooddata(backend_op)
+    show_cooking(backend_op)
 
     cooking_details = backend_op.get_cooking_details()
 
@@ -45,6 +46,8 @@ def main():
 
 
 #________________________________________________________________________________________________________________________
+
+#「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。（PCPG-11）
 def show_refrigerator_fooddata(backend_op):
     
     df_dict = backend_op.get_df_from_db()
@@ -55,6 +58,17 @@ def show_refrigerator_fooddata(backend_op):
     frontend_op.show_refrigerator_fooddata_df(df_refrigerator, df_fooddata) 
     return
 
+#登録済みの料理を表示。（PCPG-17）
+def show_cooking(backend_op):
+    df_dict = backend_op.get_df_from_db()
+    df_cooking = df_dict["Cooking"]
+    frontend_op = frontend_main.FrontEndOperator(df_cooking)
+    frontend_op.show_cooking_df(df_cooking) 
+    return
+
+#「料理を作る」ボタンを押すと「cooking_id」が生成され、backend_op.add_cooking_historyを呼び出す。（PCPG-17）
+def create_cooking_id():
+    return
 
 def temp_add_refrigerator_food(backend_op):
     """

@@ -27,6 +27,11 @@ class FrontEndOperator():
             st.header(f"Table: {table}")
             df = self.df_dict[table]
             st.dataframe(df)
+            
+    def show_cooking_df(self, df_dict):
+        st.title('登録済みの料理')
+        st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
+        st.dataframe(df_dict)
 
 class FrontEndOperatorRefrigeratorFooddata():
     def __init__(self, initial_df_dict, second_df_dict) -> None:
