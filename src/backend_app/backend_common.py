@@ -33,7 +33,7 @@ def system_msg_print(msg):
     """
     Backend側で用いるシステムメッセージ表示用のprint関数
     """
-    print(f'\n[backend : system-message] {msg}')
+    print(f'[backend : system-message] {msg}')
     return
 
 #________________________________________________________________________________________________________________________

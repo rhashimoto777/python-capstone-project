@@ -13,12 +13,12 @@ import sqlite_db
 import fooddata
 import backend_common as common
 
-#________________________________________________________________________________________________________________________
 class BackEndOperator():
     def __init__(self):
         common.init() 
         fooddata.init()
         self.db_operator = sqlite_db.DataBaseOperator()
+        self.df_dict = None
         self.__pull_df_from_db()
 
     #________________________________________________________________________________________________________________________
@@ -26,16 +26,22 @@ class BackEndOperator():
     def get_df_from_db(self):
         """
         classの外側にDBに対応するDataFrameを返す。
+        頻繁に呼ばれる関数であるため、動作が遅くならないようにこの関数内でDBからのpull (__pull_df_from_db) は行わない。
+        代わりにDBにpushした直後に確実にpullが行われるようにすることで、DBとの乖離無き事を担保する。
+        ( そのためには、BackEndOperatorのインスタンスが1つだけである必要がある )
         """
-        self.__pull_df_from_db()
         return self.df_dict
     
     def get_cooking_details(self):
         """
         Gookingごとの総カロリー・総P/F/C量などの情報を返す。
-        出力は辞書型の中にDataFrameが入った形とする。
+        出力は辞書型のリストであり、リストの各要素となる辞書には下記の情報が入っている。
+            key 'CookingID'         : CookingテーブルのCookingIDと同じ
+            key 'CookingAttribute'  : 料理としての合計栄養情報に対応するDataFrame。
+                                      ""
+            key 'FoodAttribute'     : 料理を構成する食材ごとの栄養情報に対応するDataFrame
+        各DataFrameに何が入っているのかはbreakpoint()等を使って確認してください。
         """
-        self.__pull_df_from_db()
         # DB由来のDataFrameを取得
         df_c = self.df_dict["Cooking"]
         df_cf = self.df_dict["CookingFoodData"]
@@ -99,19 +105,65 @@ class BackEndOperator():
             self.__push_df_to_db_by_append("CookingFoodData", df_food_and_grams)
         return cooking_id
     
+    def check_possible_to_make_cooking(self, cooking_id):
+        """
+        IDで指定された料理を1食作るのに必要な材料が冷蔵庫にあるかどうかを確認する。
+        返り値は2つである。
+          第1返り値 : 料理を作ることが可能かどうかを表すboolean
+          第2返り値 : 料理を作ることが可能なとき、料理の材料分を引いた冷蔵庫のDataFrameを返す。
+                      (料理を作ることができないときはNoneを返す)
+        """
+        df_cf = self.df_dict["CookingFoodData"]
+        df_cf = df_cf[df_cf["CookingID"]==cooking_id]
+        df_rfrg = self.df_dict["Refrigerator"]
+        df_rfrg_after_cooking = df_rfrg
+
+        is_possible_to_make_cooking = True
+        for i in range(len(df_cf)):
+            # 料理に使う食材のIDと必要なグラム数を取得する
+            food_id = df_cf.iloc[i].loc["FoodDataID"]
+            c_food_gram = df_cf.iloc[i].loc["Grams"]
+
+            # 対応する食材の冷蔵庫内のグラム数を取得する
+            df_rfrg_fid = df_rfrg[df_rfrg["FoodDataID"] == food_id]
+            r_food_gram = df_rfrg_fid["Grams"].values[0]
+
+            # 冷蔵庫内のグラム数が料理に必要なグラム数より多意かどうかを判定する
+            if r_food_gram >= c_food_gram:
+                df_rfrg_after_cooking.loc[df_rfrg_fid.index, "Grams"] -= c_food_gram
+            else:
+                is_possible_to_make_cooking = False
+                df_rfrg_after_cooking = None
+                break
+        
+        return is_possible_to_make_cooking, df_rfrg_after_cooking
+
+
     def add_cooking_history(self, cooking_id):
         """
-        「料理を実際に作る」に相当する操作
+        「料理を実際に作る」に相当する操作。
+        CookingHistoryに料理を追加し、同時に料理に必要な材料を冷蔵庫から差し引く。
+        冷蔵庫に十分な在庫が無い場合は何もせず、Falseを返す。
         """
-        new_cooking_history_id = self.__issue_new_id(self.df_dict["CookingHistory"]['CookingHistoryID'].tolist())
+        # 冷蔵庫内に必要な材料が十分なグラム数あるかを確認する。
+        fg_can_cook, df_rf_after_cooking = self.check_possible_to_make_cooking(cooking_id)
 
-        dict = []
-        dict.append({"CookingHistoryID":new_cooking_history_id, "CookingID":cooking_id, "IssuedDate":datetime.now()})
-        df = pd.DataFrame(dict)
-        self.__push_df_to_db_by_append("CookingHistory",df)
+        if fg_can_cook:
+            # CookingHistoryに料理を追加する
+            new_cooking_history_id = self.__issue_new_id(self.df_dict["CookingHistory"]['CookingHistoryID'].tolist())
+            dict = []
+            dict.append({"CookingHistoryID":new_cooking_history_id, "CookingID":cooking_id, "IssuedDate":datetime.now()})
+            df = pd.DataFrame(dict)
+            self.__push_df_to_db_by_append("CookingHistory",df)
 
-        # TODO : 使った材料の分だけ冷蔵庫から減らす
-        return
+            # 料理に必要な材料分だけ、冷蔵庫の在庫から差し引く
+            self.replace_refrigerator(df_rf_after_cooking)
+
+            # 正常に計算終了したのでTrueを返す
+            return True
+        else:
+            # 実際には料理を作ることが出来ないため、計算失敗したということを表すべくFalseを返す。
+            return False
     
     def replace_refrigerator(self, df_refrigerator):
         """
@@ -135,7 +187,7 @@ class BackEndOperator():
         append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
         """
         self.db_operator.append_dbtable_from_df(table_name, df)
-        self.__pull_df_from_db()
+        self.__pull_df_from_db() # push直後に確実にpullを行う
         return
     
     def __push_df_to_db_by_replace(self, table_name, df):
@@ -144,7 +196,7 @@ class BackEndOperator():
         append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
         """
         self.db_operator.replace_table_from_df(table_name, df)
-        self.__pull_df_from_db()
+        self.__pull_df_from_db() # push直後に確実にpullを行う
         return
     
     def __issue_new_id(self, existing_id_list):
