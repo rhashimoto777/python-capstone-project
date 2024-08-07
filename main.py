@@ -28,6 +28,8 @@ def main():
 
     
     show_refrigerator_fooddata(backend_op)
+    show_cooking(backend_op)
+    start_cooking(backend_op)
 
     cooking_details = backend_op.get_cooking_details()
 
@@ -46,6 +48,8 @@ def main():
     sample_get_cooking_details(cooking_details)
 
 #________________________________________________________________________________________________________________________
+
+#「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。（PCPG-11）
 def show_refrigerator_fooddata(backend_op):
     
     df_dict = backend_op.get_df_from_db()
@@ -56,6 +60,50 @@ def show_refrigerator_fooddata(backend_op):
     frontend_op.show_refrigerator_fooddata_df(df_refrigerator, df_fooddata) 
     return
 
+#登録済みの料理を表示。（PCPG-17）
+def show_cooking(backend_op):
+    df_dict = backend_op.get_df_from_db()
+    df_cooking = df_dict["Cooking"]
+    frontend_op = frontend_main.FrontEndOperator(df_cooking)
+    frontend_op.show_cooking_df(df_cooking) 
+    return
+
+#「料理を作る」ボタンを押すと「cooking_id」が生成され、backend_op.add_cooking_historyを呼び出す。（PCPG-17）
+def start_cooking(backend_op):
+    
+    st.sidebar.title("料理を作る")
+    
+    # データフレームの取得
+    df_dict = backend_op.get_df_from_db()
+    df_cooking = df_dict["Cooking"]
+    
+    user_input_cookingid = st.sidebar.text_input('登録済みの料理からCookingIDを入力してください')
+    
+     # 入力された値が整数かどうかを検証
+    try:
+        cooking_id = int(user_input_cookingid)  # 入力を整数に変換
+    except ValueError:
+        cooking_id = None  # 整数でない場合はNoneを設定
+    
+    cooking_button = st.sidebar.button('料理を作る', key='button2')
+    
+    # ボタンがクリックされた場合
+    if cooking_button:
+        
+        if cooking_id is not None:
+            # `cooking_id` が `cooking` テーブルの `CookingID` 列に存在するか確認
+            if cooking_id in df_cooking['CookingID'].values:
+                # 存在する場合、料理の履歴を追加
+                backend_op.add_cooking_history(cooking_id)
+                st.sidebar.success('料理の履歴が追加されました。')
+            else:
+                # 存在しない場合、エラーメッセージを表示
+                st.sidebar.error('指定されたCookingIDは登録されていません。')
+        else:
+            # 整数でない入力に対するエラーメッセージ
+            st.sidebar.error('無効な入力です！整数を入力してください。')
+    
+    return
 
 def temp_add_refrigerator_food(backend_op):
     """
