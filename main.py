@@ -9,9 +9,6 @@ sys.path.insert(0, subfolder_path)
 # srcフォルダ内の.pyをインポート
 import frontend_main
 
-import translator
-import backend_main
-
 #________________________________________________________________________________________________________________________
 def main():
     """

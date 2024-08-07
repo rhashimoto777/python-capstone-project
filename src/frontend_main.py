@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-import translator
 import plotly.express as px
 import plotly.graph_objects as go
+
+import translator
 
 # デバッグ表示モード
 IS_DEBUG_PRINT_MODE_IN_FRONTEND = True
@@ -19,6 +20,7 @@ class FrontEndOperator():
         self.__resister_cooking()
         self.__start_cooking()
         self.__show_nutrition_info_of_cooking()
+        return
             
     def __show_cookings_registered(self):
         """
@@ -28,6 +30,7 @@ class FrontEndOperator():
         st.title('登録済みの料理')
         st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
         st.dataframe(df_cooking)
+        return
     
     def __show_refrigerator_fooddata(self):
         df_refrigerator = self.translator.get_df_refrigerator()
@@ -150,6 +153,7 @@ class FrontEndOperator():
             #  円グラフの表示
             st.plotly_chart(fig)
             st.write(f"Total Calories: {total_calories} kcal") 
+        return
 
 
 
