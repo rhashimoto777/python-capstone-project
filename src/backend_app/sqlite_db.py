@@ -188,7 +188,7 @@ class DataBaseOperator:
             # Refrigeratorテーブルの作成
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Refrigerator (
-                    FoodDataID INTEGER,
+                    FoodDataID INTEGER UNIQUE,
                     Grams REAL,
                     FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
                 )
