@@ -60,14 +60,18 @@ class Translator():
         return df_dict["ShoppingHistory"]
     
     # _______________________________________________________________________
-    #                      Get系関数群：DataFrameの取得
+    #                      Get系関数群：各種解釈情報の取得
     # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
     def get_cooking_details(self):
         """ backend_main.py内の説明を参照 """
         return self.backend_op.get_cooking_details()
     
+    def check_possible_to_make_cooking(self, cooking_id):
+        """ backend_main.py内の説明を参照 """
+        self.backend_op.check_possible_to_make_cooking(cooking_id)
+    
     # _______________________________________________________________________
-    #                      Set系関数群：DataFrameの取得
+    #                      Set系関数群：何らかDBに値を書き込む操作
     # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
     def add_cooking(self, df_food_and_grams, df_cooking_attributes):
         """ backend_main.py内の説明を参照 """
@@ -78,10 +82,6 @@ class Translator():
         """ backend_main.py内の説明を参照 """
         self.backend_op.add_cooking_history(cooking_id)
         return 
-    
-    def check_possible_to_make_cooking(self, cooking_id):
-        """ backend_main.py内の説明を参照 """
-        self.backend_op.check_possible_to_make_cooking(cooking_id)
     
     def replace_refrigerator(self, df_refrigerator_new):
         """ backend_main.py内の説明を参照 """
