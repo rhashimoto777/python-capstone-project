@@ -3,6 +3,8 @@ import os
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import plotly.express as px
+import plotly.graph_objects as go
 
 # subfolderをモジュール検索パスに追加
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,8 +43,7 @@ def main():
     # frontend_op.sample_show_all_df() 
 
     # <<< 説明用デモ3 >>> : Cookingの詳細情報の取得
-    # sample_get_cooking_details(cooking_details)
-
+    sample_get_cooking_details(cooking_details)
 
 #________________________________________________________________________________________________________________________
 def show_refrigerator_fooddata(backend_op):
@@ -102,6 +103,34 @@ def sample_get_cooking_details(cooking_details):
         food_attribute = cooking_details_elem["FoodAttribute"]
         print(" <<<< FoodAttribute >>>>")
         print(food_attribute)
+
+    # タイトル
+    st.title("料理ごとのカロリーとPFCバランス")
+    st.write(cooking_attribute)
+
+    #各カロリーの取得
+    total_calories = float(cooking_attribute["CookingCalory_Total"])
+    protein_calories = float(cooking_attribute["CookingCalory_Protein"])
+    fat_calories = float(cooking_attribute["CookingCalory_Fat"])
+    carbo_calories = float(cooking_attribute["CookingCalory_Carbo"])
+
+    #PFCバランスの計算
+    percentages = {
+        "Protein": (protein_calories / total_calories) * 100,
+        "Fat": (fat_calories / total_calories) * 100,
+        "Carbohydrate": (carbo_calories / total_calories) * 100
+        }
+
+    # ラベルと値のリスト化
+    labels = list(percentages.keys())
+    values = list(percentages.values())
+
+    # 円グラフの作成
+    fig = px.pie(values=values, names=labels, title=f'PFCバランス (CookingID: {cooking_id})')
+
+    #  円グラフの表示
+    st.plotly_chart(fig)
+    st.write(f"Total Calories: {total_calories} kcal") 
 
 
 def sample_demo(backend_op, frontend_op):
