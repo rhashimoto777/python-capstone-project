@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from datetime import datetime
 
 import translator
 
@@ -15,10 +16,10 @@ class FrontEndOperator():
         return
     
     def run(self):
-        self.__show_cookings_registered()
-        self.__show_refrigerator_fooddata()
         self.__resister_cooking()
         self.__start_cooking()
+        self.__show_cookings_registered()
+        self.__show_refrigerator_fooddata()
         self.__show_nutrition_info_of_cooking()
         return
             
@@ -53,24 +54,51 @@ class FrontEndOperator():
         selected_foods = st.sidebar.multiselect("食材を選んでください", food_options)
         
         # 食材に対する数量を入力
-        selected_quantities = {}
-        for food in selected_foods:
-            quantity = st.sidebar.number_input(f"{food}の重量(g)を入力してください", min_value=0, value=1)
-            selected_quantities[food] = quantity
+        user_food_select = []
+        for food_name in selected_foods:
+            map = df_fooddata['FoodName'] == food_name
+            dict = {}
+            dict["f_name"]      = food_name
+            dict["f_id"]        = df_fooddata.loc[map, 'FoodDataID'].values[0]
+            dict["f_su_name"]   = df_fooddata.loc[map, 'StandardUnit_Name'].values[0]
+            dict["f_su_g"]      = df_fooddata.loc[map, 'StandardUnit_Grams'].values[0]
+
+            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
+            quantity = st.sidebar.number_input(msg, min_value=0, value=1)
+            dict["su_quantity"] = quantity
+            dict["g"]           = quantity * dict["f_su_g"]
+            user_food_select.append(dict)
 
         # 選択した食材と個数を表示
-        st.sidebar.write("選択した食材と重量(g)を確認:")
-        for food, quantity in selected_quantities.items():
-            st.sidebar.write(f"{food}: {quantity}")
+        st.sidebar.write("選択した食材と個数を確認:")
+        for food in user_food_select:
+            msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
+            st.sidebar.write(msg)
 
-        # 料理名を登録
-        name = st.sidebar.text_input('新しい料理の料理名を教えてください')
+        # 料理名・説明・お気に入り登録
+        c_name = st.sidebar.text_input('新しい料理の料理名を教えてください')
+        c_desc = st.sidebar.text_area('説明')
+        is_favorite = st.sidebar.toggle("お気に入り登録")
 
-        # 日付入力
-        date = st.sidebar.date_input('Input date')
-       
-        # ボタン
+        # 登録ボタン
         register_btn = st.sidebar.button('料理を登録')
+        if register_btn:
+            dict = []
+            for food in user_food_select:
+                dict.append({"FoodDataID":food["f_id"], "Grams":food["g"]})
+            df_food_and_grams = pd.DataFrame(dict)
+
+            dict = []
+            dict.append({"CookingName":c_name, "isFavorite":is_favorite, "LastUpdateDate":datetime.now(), "Description":c_desc})
+            df_cooking_attributes = pd.DataFrame(dict)
+            is_success, msg = self.translator.add_cooking(df_food_and_grams, df_cooking_attributes)
+            if is_success:
+                st.sidebar.success('料理を追加しました')
+            else:
+                if msg == "same_cooking_already_exist":
+                    st.sidebar.error('同じ材料構成の料理が既に登録されています')
+                else:
+                    st.sidebar.error('料理の追加に失敗しました')
         return
 
     def __start_cooking(self):
@@ -129,28 +157,30 @@ class FrontEndOperator():
 
             st.subheader(f'{cooking_id} : {cooking_name}')
             st.write(cooking_attribute)
+            st.table(food_attribute)
 
             #各カロリーの取得
-            total_calories = float(cooking_attribute["CookingCalory_Total"])
-            protein_calories = float(cooking_attribute["CookingCalory_Protein"])
-            fat_calories = float(cooking_attribute["CookingCalory_Fat"])
-            carbo_calories = float(cooking_attribute["CookingCalory_Carbo"])
+            total_calories = float(cooking_attribute["CookingCalory_Total"].values[0])
+            protein_calories = float(cooking_attribute["CookingCalory_Protein"].values[0])
+            fat_calories = float(cooking_attribute["CookingCalory_Fat"].values[0])
+            carbo_calories = float(cooking_attribute["CookingCalory_Carbo"].values[0])
 
-            #PFCバランスの計算
-            percentages = {
-                "Protein": (protein_calories / total_calories) * 100,
-                "Fat": (fat_calories / total_calories) * 100,
-                "Carbohydrate": (carbo_calories / total_calories) * 100
-                }
+            if total_calories != 0:
+                #PFCバランスの計算
+                percentages = {
+                    "Protein": (protein_calories / total_calories) * 100,
+                    "Fat": (fat_calories / total_calories) * 100,
+                    "Carbohydrate": (carbo_calories / total_calories) * 100
+                    }
 
-            # ラベルと値のリスト化
-            labels = list(percentages.keys())
-            values = list(percentages.values())
+                # ラベルと値のリスト化
+                labels = list(percentages.keys())
+                values = list(percentages.values())
 
-            # 円グラフの作成
-            fig = px.pie(values=values, names=labels, title=f'PFCバランス (CookingID: {cooking_id})')
+                # 円グラフの作成
+                fig = px.pie(values=values, names=labels, title=f'PFCバランス (CookingID: {cooking_id})')
 
-            #  円グラフの表示
+                #  円グラフの表示
             st.plotly_chart(fig)
             st.write(f"Total Calories: {total_calories} kcal") 
         return
