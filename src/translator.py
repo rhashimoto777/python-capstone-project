@@ -75,8 +75,8 @@ class Translator():
     # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
     def add_cooking(self, df_food_and_grams, df_cooking_attributes):
         """ backend_main.py内の説明を参照 """
-        self.backend_op.add_cooking(df_food_and_grams, df_cooking_attributes)
-        return 
+        is_success, msg = self.backend_op.add_cooking(df_food_and_grams, df_cooking_attributes)
+        return is_success, msg
     
     def add_cooking_history(self, cooking_id):
         """ backend_main.py内の説明を参照 """
