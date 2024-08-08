@@ -13,7 +13,13 @@ import sqlite_db
 import fooddata
 import backend_common as common
 
-class BackEndOperator():
+class Singleton(object):
+    def __new__(cls, *args, **kargs):
+        if not hasattr(cls, "_instance"):
+            cls._instance = super(Singleton, cls).__new__(cls)
+        return cls._instance
+
+class BackEndOperator(Singleton):
     def __init__(self):
         common.init() 
         fooddata.init()
@@ -94,8 +100,9 @@ class BackEndOperator():
         # DB上に同じ食材構成のCookingがあるかを判別する。
         cooking_id = self.__judge_same_cooking_already_exist(df_food_and_grams)
         if cooking_id != None:
-            # 既に同じ料理が登録されている状態。TODO: 何らかユーザーにメッセージで通知する。
-            pass
+            # 既に同じ料理が登録されている状態。
+            # 料理を追加で来ていないのでFalseを返し、加えて理由も返す
+            return False, "same_cooking_already_exist"
         else:
             cooking_id = self.__issue_new_id(self.df_dict["Cooking"]['CookingID'].tolist())
             df_cooking_attributes["CookingID"] = cooking_id
@@ -103,7 +110,8 @@ class BackEndOperator():
 
             df_food_and_grams["CookingID"] = cooking_id
             self.__push_df_to_db_by_append("CookingFoodData", df_food_and_grams)
-        return cooking_id
+            # 正常に終了したため、Trueと新しいCookingIDを返す。
+            return True, cooking_id
     
     def check_possible_to_make_cooking(self, cooking_id):
         """
