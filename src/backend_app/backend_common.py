@@ -8,6 +8,7 @@ IS_DEBUG_PRINT_MODE_IN_BACKEND = True
 ROOT_PATH = None
 DB_PATH = None
 DB_FILENAME = None
+DB_BACKUP_FILENAME = None
 FOODDATA_JSON_PATH = None
 FOODDATA_JSON_FILENAME = None
 
@@ -26,6 +27,13 @@ def debug_print(d, message):
     if IS_DEBUG_PRINT_MODE_IN_BACKEND:
         print(f'==============[Back-end] (DEBUG PRINT) {message}==============')
         print(d)
+    return
+
+def system_msg_print(msg):
+    """
+    Backend側で用いるシステムメッセージ表示用のprint関数
+    """
+    print(f'[backend : system-message] {msg}')
     return
 
 #________________________________________________________________________________________________________________________
@@ -58,8 +66,10 @@ def _gen_db_path_and_name(user_id):
     """
     global DB_PATH
     global DB_FILENAME
+    global DB_BACKUP_FILENAME
     DB_PATH = os.path.join(ROOT_PATH, 'data', user_id)
     DB_FILENAME = 'cooking_system.db'
+    DB_BACKUP_FILENAME = 'cooking_system_backup.db'
     return
 
 #________________________________________________________________________________________________________________________
