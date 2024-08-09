@@ -67,25 +67,17 @@ class FrontEndOperator():
             dict["f_id"]        = df_fooddata.loc[map, 'FoodDataID'].values[0]
             dict["f_su_name"]   = df_fooddata.loc[map, 'StandardUnit_Name'].values[0]
             dict["f_su_g"]      = df_fooddata.loc[map, 'StandardUnit_Grams'].values[0]
-            dict["f_kcal"]      = df_fooddata.loc[map, 'Calory_Total'].values[0]
-            dict["f_Pg"]        = df_fooddata.loc[map, 'Grams_Protein'].values[0]
-            dict["f_Fg"]   = df_fooddata.loc[map, 'Grams_Fat'].values[0]
-            dict["f_Cg"]      = df_fooddata.loc[map, 'Grams_Carbo'].values[0]
 
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
             quantity = st.sidebar.number_input(msg, min_value=0, value=1)
             dict["su_quantity"] = quantity
             dict["g"]           = quantity * dict["f_su_g"]
-            dict["su_kcal"] = quantity * dict["f_kcal"]
-            dict["su_Pg"] = quantity * dict["f_Pg"]
-            dict["su_Fg"] = quantity * dict["f_Fg"]
-            dict["su_Cg"] = quantity * dict["f_Cg"]
 
             # 合計を計算
-            total_kcal += dict["su_kcal"]
-            total_protein += dict["su_Pg"]
-            total_fat += dict["su_Fg"]
-            total_carbs += dict["su_Cg"]
+            total_kcal += quantity * df_fooddata.loc[map, 'Calory_Total'].values[0]
+            total_protein += quantity * df_fooddata.loc[map, 'Grams_Protein'].values[0]
+            total_fat += quantity * df_fooddata.loc[map, 'Grams_Fat'].values[0]
+            total_carbs += quantity * df_fooddata.loc[map, 'Grams_Carbo'].values[0]
         
             user_food_select.append(dict)
 
