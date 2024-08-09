@@ -21,6 +21,7 @@ class FrontEndOperator():
         self.__show_cookings_registered()
         self.__show_refrigerator_fooddata()
         self.__show_nutrition_info_of_cooking()
+        self.__show_cookinghistory_registered()
         return
             
     def __show_cookings_registered(self):
@@ -185,6 +186,19 @@ class FrontEndOperator():
             st.write(f"Total Calories: {total_calories} kcal") 
         return
 
+    def __show_cookinghistory_registered(self):
+        """
+        過去に作った料理を表示する。
+        """
+        df_cookinghistory = self.translator.get_df_cookinghistory()
+        df_cooking = self.translator.get_df_cooking()
+        
+        df_cookinghistory_cooking = df_cookinghistory.merge(df_cooking, on='CookingID')
+        st.title('過去に作った料理')
+        st.caption('「CookingHistory」内にある過去に作った料理を、UI上に表示する。')
+        st.dataframe(df_cookinghistory_cooking)
+        
+        return
 
 
 def debug_print(d, message):
