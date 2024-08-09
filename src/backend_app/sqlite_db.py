@@ -1,4 +1,4 @@
-import backend_common as common
+from src.backend_app import backend_common as common
 import sqlite3
 import os
 import json
