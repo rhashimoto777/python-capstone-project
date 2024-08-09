@@ -1,17 +1,8 @@
-import sys
-import os
 from datetime import datetime
 import pandas as pd
-
-# subfolderをモジュール検索パスに追加
-current_dir = os.path.dirname(os.path.abspath(__file__))
-subfolder_path = os.path.join(current_dir, 'backend_app')
-sys.path.insert(0, subfolder_path)
-
-# backend_appフォルダ内の.pyをインポート
-import sqlite_db
-import fooddata
-import backend_common as common
+from src.backend_app import sqlite_db
+from src.backend_app import fooddata
+from src.backend_app import backend_common as common
 
 class Singleton(object):
     def __new__(cls, *args, **kargs):
@@ -21,6 +12,7 @@ class Singleton(object):
 
 class BackEndOperator(Singleton):
     def __init__(self):
+        common.system_msg_print("********** Generating Backend Instance ********")
         common.init() 
         fooddata.init()
         self.db_operator = sqlite_db.DataBaseOperator()
