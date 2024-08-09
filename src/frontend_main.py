@@ -55,6 +55,11 @@ class FrontEndOperator():
         
         # 食材に対する数量を入力
         user_food_select = []
+        total_kcal = 0
+        total_protein = 0
+        total_fat = 0
+        total_carbs = 0
+
         for food_name in selected_foods:
             map = df_fooddata['FoodName'] == food_name
             dict = {}
@@ -67,6 +72,13 @@ class FrontEndOperator():
             quantity = st.sidebar.number_input(msg, min_value=0, value=1)
             dict["su_quantity"] = quantity
             dict["g"]           = quantity * dict["f_su_g"]
+
+            # 合計を計算
+            total_kcal += quantity * df_fooddata.loc[map, 'Calory_Total'].values[0]
+            total_protein += quantity * df_fooddata.loc[map, 'Grams_Protein'].values[0]
+            total_fat += quantity * df_fooddata.loc[map, 'Grams_Fat'].values[0]
+            total_carbs += quantity * df_fooddata.loc[map, 'Grams_Carbo'].values[0]
+        
             user_food_select.append(dict)
 
         # 選択した食材と個数を表示
@@ -74,6 +86,21 @@ class FrontEndOperator():
         for food in user_food_select:
             msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
             st.sidebar.write(msg)
+
+        # 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
+        # 合計値を表示
+        st.sidebar.write("選択した食材の総カロリー:")
+        st.sidebar.write(f"総カロリー: {total_kcal:.2f} kcal")
+        st.sidebar.write(f"総タンパク質: {total_protein:.2f} g")
+        st.sidebar.write(f"総脂質: {total_fat:.2f} g")
+        st.sidebar.write(f"総炭水化物: {total_carbs:.2f} g")
+
+        # # PFCバランスの円グラフを作成
+        fig = go.Figure(data=[go.Pie(labels=['タンパク質', '脂質', '炭水化物'],
+                                     values=[total_protein, total_fat, total_carbs],
+                                     textinfo='label+percent')])
+        st.sidebar.write("PFCバランス:")
+        st.sidebar.plotly_chart(fig)
 
         # 料理名・説明・お気に入り登録
         c_name = st.sidebar.text_input('新しい料理の料理名を教えてください')
