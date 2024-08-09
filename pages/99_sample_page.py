@@ -7,14 +7,14 @@ st.title("このページはマルチページの利用に関するサンプル�
 
 #--------------------------------------------------------------------------------
 st.subheader("【解説1】frontend_main.pyとの関係")
-st.write('このファイル(00_sample_page.py)は、次のようなフォルダ関係にあります。')
+st.write('このファイル(99_sample_page.py)は、次のようなフォルダ関係にあります。')
 code = '''
 main.py
 srcフォルダ
    - frontend_main.py
    - translator.py
 pagesフォルダ
-   - 00_sample_page.py
+   - 99_sample_page.py
 '''
 st.code(code)
 st.write("""
@@ -54,8 +54,8 @@ if submit_btn:
 st.subheader("【解説3】ページの表示順番")
 st.markdown(
 """
-- .pyのファイル名についている「00_」「01_」等の数字でページの表示順番を制御できます。
-- このファイルも「00_sample_page.py」という名前ですが、Streamlitの表示上は「sample page」と表示されていると思います。
+- .pyのファイル名についている「99_」「01_」等の数字でページの表示順番を制御できます。
+- このファイルも「99_sample_page.py」という名前ですが、Streamlitの表示上は「sample page」と表示されていると思います。
 - 詳しくは **[この記事](https://qiita.com/nockn/items/f40a80cc79fcb358083c#%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E9%A0%86%E7%95%AA%E3%82%92%E6%93%8D%E4%BD%9C%E3%81%99%E3%82%8B)**などを参照ください
 """
 )
