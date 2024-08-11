@@ -1,22 +1,29 @@
-import sys
-import os
-
-# subfolderをモジュール検索パスに追加
-current_dir = os.path.dirname(os.path.abspath(__file__))
-subfolder_path = os.path.join(current_dir, 'src')
-sys.path.insert(0, subfolder_path)
-
-# srcフォルダ内の.pyをインポート
-import frontend_main
+from src import translator
+from src import frontend_main
 
 #________________________________________________________________________________________________________________________
-def main():
+def main_page():
     """
-    メイン処理
+    Streamlitの仕様上、main.pyに対応するページが必ず出来てしまう。
+    そのため、mainページに対応する表示処理をmain.py内から呼び出す必要がある。
+    mainページを表示するための関数であるため、"main_page"という関数名にしておく。
+
+    また、この関数が一番最初に実行されるため、各種初回処理を行う。
     """
-    frontend_op = frontend_main.FrontEndOperator()
-    frontend_op.run()
-    
-#________________________________________________________________________________________________________________________
+    # TBD : ユーザーIDの選択UI
+
+    # ************************************
+    # translatorクラス内でBackEndOperatorのインスタンスを生成する。
+    # この時点でuser_idを渡し、ユーザーIDごとのDBを呼び出す。（何も指定しなければuser_default）
+    # ************************************
+    translator.init()
+
+    # ************************************
+    # frontend内でtranslator-APIを使う処理は必ず translator.init() を実行した後で行うこと。
+    # そうしないとBackEndOperatorのインスタンスがまだ出来ていないので、各種APIが動作しない。
+    # ************************************
+    frontend_main.main_page()
+
 if __name__ == "__main__":
-    main()
+    print("[system-message] ------------------------main function called------------------------")
+    main_page()
