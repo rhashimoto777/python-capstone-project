@@ -1,7 +1,7 @@
-from src import translator
-from src import frontend_main
+from src import frontend_main, translator
 
-#________________________________________________________________________________________________________________________
+
+# ________________________________________________________________________________________________________________________
 def main_page():
     """
     Streamlitの仕様上、main.pyに対応するページが必ず出来てしまう。
@@ -24,6 +24,9 @@ def main_page():
     # ************************************
     frontend_main.main_page()
 
+
 if __name__ == "__main__":
-    print("[system-message] ------------------------main function called------------------------")
+    print(
+        "[system-message] ------------------------main function called------------------------"
+    )
     main_page()
