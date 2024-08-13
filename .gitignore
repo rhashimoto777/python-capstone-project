@@ -1,3 +1,4 @@
 *.pyc
 __pycache__/
 cooking_system.db
+venv/
