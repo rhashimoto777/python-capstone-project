@@ -1,14 +1,17 @@
-import pytest
 import pandas as pd
+import pytest
+
 from src import frontend_main as fm
+
 
 @pytest.fixture
 def initial_df_dict():
     # テスト用の初期データフレーム辞書を作成
     return {
         "Table1": pd.DataFrame({"Column1": [1, 2], "Column2": [3, 4]}),
-        "Table2": pd.DataFrame({"ColumnA": ["A", "B"], "ColumnB": ["C", "D"]})
+        "Table2": pd.DataFrame({"ColumnA": ["A", "B"], "ColumnB": ["C", "D"]}),
     }
+
 
 # @pytest.fixture
 # def test_update_df_dict():
