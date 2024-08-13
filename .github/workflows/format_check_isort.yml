@@ -1,4 +1,4 @@
-name: Lint (Ruff and Mypy)
+name: Format-Check (isort)
 
 on: [push]
 
@@ -17,13 +17,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-    - name: Lint with Ruff
+    - name: Format-Check with isort
       run: |
-        pip install ruff
-        ruff check . --output-format=github
-
-    - name: Lint with Mypy
-      run: |
-        pip install mypy
-        mypy . --config-file pyproject.toml --ignore-missing-imports --no-namespace-packages
+        isort . --check-only
