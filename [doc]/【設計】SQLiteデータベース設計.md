@@ -66,7 +66,7 @@ IssuedDate DATETIME
 
 </details>
 
-![ER図](../doc/pic/SQLiteDB：今回実施するテーマ.png)
+![ER図](./pic/SQLiteDB：今回実施するテーマ.png)
 
 ## 【各テーブルの設計詳細】
 
@@ -228,4 +228,4 @@ Email varchar(100)
 
 </details>
 
-![ER図](../doc/pic/SQLiteDB：MS1上の元々のテーマ1.png)
+![ER図](./pic/SQLiteDB：MS1上の元々のテーマ1.png)
