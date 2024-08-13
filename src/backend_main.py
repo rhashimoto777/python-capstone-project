@@ -128,7 +128,7 @@ class BackEndOperator(Singleton):
         """
         # DB上に同じ食材構成のCookingがあるかを判別する。
         cooking_id = self.__judge_same_cooking_already_exist(df_food_and_grams)
-        if cooking_id != None:
+        if cooking_id is not None:
             # 既に同じ料理が登録されている状態。
             # 料理を追加で来ていないのでFalseを返し、加えて理由も返す
             return False, "same_cooking_already_exist"

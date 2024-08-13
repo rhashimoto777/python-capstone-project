@@ -130,7 +130,7 @@ class DataBaseOperator:
         for i in range(len(df[mask])):
             # システムメッセージを表示する
             elem = df[mask].iloc[i]
-            msg = f"FoodDataテーブルにおいて、"
+            msg = "FoodDataテーブルにおいて、"
             msg += f'「{elem.loc["FoodName"]}」の「PFC合計カロリー({elem.loc["tmp_Calory_PFC"]:.1f})」が'
             msg += (
                 f'「食材の総カロリー({elem.loc["Calory_Total"]:.1f})」を超えています。'

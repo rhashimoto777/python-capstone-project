@@ -47,7 +47,8 @@ def test_add_cooking(backend_operator):
 
 def test_add_cooking_history(backend_operator):
     # 料理履歴を追加するメソッドのテスト
-    cooking_id = 1  # 既存のCookingIDを使用
+    pass
+    # cooking_id = 1  # 既存のCookingIDを使用
     # backend_operator.add_cooking_history(cooking_id)
     # 追加された履歴を検証するためのアサーションを追加
 

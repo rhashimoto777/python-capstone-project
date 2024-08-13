@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src import frontend_main as fm
+# from src import frontend_main as fm
 
 
 @pytest.fixture
