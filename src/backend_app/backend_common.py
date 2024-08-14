@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 # デバッグ表示モード
 IS_DEBUG_PRINT_MODE_IN_BACKEND = True
@@ -12,10 +12,11 @@ DB_BACKUP_FILENAME = None
 FOODDATA_JSON_PATH = None
 FOODDATA_JSON_FILENAME = None
 
-#________________________________________________________________________________________________________________________
+# ________________________________________________________________________________________________________________________
 # global関数
 
-def init(user_id = 'user_default'):
+
+def init(user_id="user_default"):
     """
     初回起動時の処理
     """
@@ -23,21 +24,25 @@ def init(user_id = 'user_default'):
     _gen_fooddata_json_path_and_name()
     _gen_db_path_and_name(user_id)
 
+
 def debug_print(d, message):
     if IS_DEBUG_PRINT_MODE_IN_BACKEND:
-        print(f'==============[Back-end] (DEBUG PRINT) {message}==============')
+        print(f"==============[Back-end] (DEBUG PRINT) {message}==============")
         print(d)
     return
+
 
 def system_msg_print(msg):
     """
     Backend側で用いるシステムメッセージ表示用のprint関数
     """
-    print(f'[backend : system-message] {msg}')
+    print(f"[backend : system-message] {msg}")
     return
 
-#________________________________________________________________________________________________________________________
+
+# ________________________________________________________________________________________________________________________
 # private関数
+
 
 def _gen_root_path():
     """
@@ -48,15 +53,17 @@ def _gen_root_path():
     ROOT_PATH = current_path.parent.parent
     return
 
+
 def _gen_fooddata_json_path_and_name():
     """
     FoodDataテーブルの元となるjsonファイルの「フォルダpath」「ファイル名」を取得し、グローバル変数に書き込む。
     """
     global FOODDATA_JSON_PATH
     global FOODDATA_JSON_FILENAME
-    FOODDATA_JSON_PATH = os.path.join(ROOT_PATH, 'data')
-    FOODDATA_JSON_FILENAME = 'fooddata.json'
+    FOODDATA_JSON_PATH = os.path.join(ROOT_PATH, "data")
+    FOODDATA_JSON_FILENAME = "fooddata.json"
     return
+
 
 def _gen_db_path_and_name(user_id):
     """
@@ -67,16 +74,17 @@ def _gen_db_path_and_name(user_id):
     global DB_PATH
     global DB_FILENAME
     global DB_BACKUP_FILENAME
-    DB_PATH = os.path.join(ROOT_PATH, 'data', user_id)
-    DB_FILENAME = 'cooking_system.db'
-    DB_BACKUP_FILENAME = 'cooking_system_backup.db'
+    DB_PATH = os.path.join(ROOT_PATH, "data", user_id)
+    DB_FILENAME = "cooking_system.db"
+    DB_BACKUP_FILENAME = "cooking_system_backup.db"
     return
 
-#________________________________________________________________________________________________________________________
+
+# ________________________________________________________________________________________________________________________
 if __name__ == "__main__":
     init()
-    print(f'ROOT_PATH              = {ROOT_PATH}')
-    print(f'DB_PATH                = {DB_PATH}')
-    print(f'DB_FILENAME            = {DB_FILENAME}')
-    print(f'FOODDATA_JSON_PATH     = {FOODDATA_JSON_PATH}')
-    print(f'FOODDATA_JSON_FILENAME = {FOODDATA_JSON_FILENAME}')
+    print(f"ROOT_PATH              = {ROOT_PATH}")
+    print(f"DB_PATH                = {DB_PATH}")
+    print(f"DB_FILENAME            = {DB_FILENAME}")
+    print(f"FOODDATA_JSON_PATH     = {FOODDATA_JSON_PATH}")
+    print(f"FOODDATA_JSON_FILENAME = {FOODDATA_JSON_FILENAME}")
