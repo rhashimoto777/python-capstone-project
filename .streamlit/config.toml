@@ -1,0 +1,11 @@
+[theme]
+base="light"
+primaryColor="#004a55"
+backgroundColor="#fafafa"
+secondaryBackgroundColor="#FFFF00"
+textColor="#222"
+font="sans serif"
+borderColor="#4CAF50"
+borderRadius="8px"
+buttonPrimaryColor="#800080"
+buttonSecondaryColor="#008000"
