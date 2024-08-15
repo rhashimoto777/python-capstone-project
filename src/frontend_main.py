@@ -27,7 +27,11 @@ def show_cookings_registered():
     df_cooking = translator.get_df_cooking()
     st.header("登録済みの料理リスト")
     # st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
-    st.dataframe(df_cooking)
+    # データフレームをHTML形式に変換し、インデックスを非表示にする
+    html = df_cooking.to_html(index=False)
+    
+    # HTMLで表示
+    st.markdown(html, unsafe_allow_html=True)
     return
 
 
@@ -38,12 +42,10 @@ def show_refrigerator_fooddata():
     # Streamlitを使ってDataFrameを表示
     # st.header('冷蔵庫の食材はこちら')
     # st.caption('「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。')
-    df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on="FoodDataID")
-    st.dataframe(
-        df_refrigerator_fooddata[["FoodDataID", "FoodName", "Grams"]],
-        width=600,
-        height=600,
-    )
+    df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on='FoodDataID')
+    # HTMLでデータフレームを表示
+    html = df_refrigerator_fooddata[["FoodName", "Grams"]].to_html(index=False)
+    st.markdown(html, unsafe_allow_html=True)
     return
 
 
@@ -165,12 +167,11 @@ def start_cooking():
     df_cooking = translator.get_df_cooking()
 
     ####### ユーザー操作 ######
-    st.header("料理を作りましょう")
+    # st.header('料理を作りましょう')
     # st.title("料理を作る")
-    user_input_cookingid = st.text_input(
-        "登録済みの料理からCookingIDを入力してください"
-    )
-    cooking_button = st.button("料理を作る", key="button2")
+    st.header('登録済みの料理からCookingIDを入力してください')
+    user_input_cookingid = st.text_input('')
+    cooking_button = st.button('料理を作る', key='button2')
 
     ####### データ処理 ######
     # ユーザーが入力したCookingIDが整数かどうかを検証
