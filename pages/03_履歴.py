@@ -1,6 +1,6 @@
 import streamlit as st
 
-from src import frontend_main, translator
+from src import frontend_main
 
 st.set_page_config(layout="wide")
 
