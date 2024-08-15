@@ -1,12 +1,12 @@
-from src import frontend_main
-from src import translator
 import streamlit as st
 
+from src import frontend_main, translator
+
 st.set_page_config(
-    page_title="My cooking", 
-    page_icon=None, 
-    layout="wide", 
-    initial_sidebar_state="auto", 
+    page_title="My cooking",
+    page_icon=None,
+    layout="wide",
+    initial_sidebar_state="auto",
 )
 
 st.title("冷蔵庫の食材から料理を登録しましょう")
@@ -22,18 +22,20 @@ st.markdown(
         width: 300px;
     }
     </style>
-    """,unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
 
-col1, col2= st.columns(2)
+col1, col2 = st.columns(2)
 with col1:
 
     frontend_main.choice_food()
     frontend_main.resister_cooking()
-    
+
 
 with col2:
-    st.header('冷蔵庫の食材はこちら')
+    st.header("冷蔵庫の食材はこちら")
     with st.expander("冷蔵庫の食材"):
         frontend_main.show_refrigerator_fooddata()
 

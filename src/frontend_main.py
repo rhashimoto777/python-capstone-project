@@ -9,6 +9,7 @@ from src import translator
 
 user_food_select = None
 
+
 def main_page():
     resister_cooking()
     start_cooking()
@@ -24,7 +25,7 @@ def show_cookings_registered():
     既に登録済みの料理を表示する。
     """
     df_cooking = translator.get_df_cooking()
-    st.header('登録済みの料理リスト')
+    st.header("登録済みの料理リスト")
     # st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
     st.dataframe(df_cooking)
     return
@@ -37,9 +38,14 @@ def show_refrigerator_fooddata():
     # Streamlitを使ってDataFrameを表示
     # st.header('冷蔵庫の食材はこちら')
     # st.caption('「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。')
-    df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on='FoodDataID')
-    st.dataframe(df_refrigerator_fooddata[["FoodDataID", "FoodName", "Grams"]],width=600, height=600)
+    df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on="FoodDataID")
+    st.dataframe(
+        df_refrigerator_fooddata[["FoodDataID", "FoodName", "Grams"]],
+        width=600,
+        height=600,
+    )
     return
+
 
 def choice_food():
     global user_food_select
@@ -51,7 +57,7 @@ def choice_food():
     # 食材を複数選択
     st.subheader("食材を選んでください")
     selected_foods = st.multiselect("", food_options)
-    
+
     # 食材に対する数量を入力
     user_food_select = []
     total_kcal = 0
@@ -95,25 +101,32 @@ def choice_food():
     ## st.write(f"総炭水化物: {total_carbs:.2f} g")
 
     # # PFCバランスの円グラフを作成
-    fig = go.Figure(data=[go.Pie(labels=['タンパク質', '脂質', '炭水化物'],
-                                    values=[total_protein, total_fat, total_carbs],
-                                    textinfo='label+percent')])
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=["タンパク質", "脂質", "炭水化物"],
+                values=[total_protein, total_fat, total_carbs],
+                textinfo="label+percent",
+            )
+        ]
+    )
     st.write("PFCバランス:")
     st.plotly_chart(fig)
     return
 
+
 def resister_cooking():
     # 料理名・説明・お気に入り登録
-    st.header('新しい料理を登録しましょう')
-    st.subheader('新しい料理の料理名を教えてください')
-    c_name = st.text_input('')
-    st.subheader('説明')
-    c_desc = st.text_area('')
-    st.subheader('お気に入り登録')
+    st.header("新しい料理を登録しましょう")
+    st.subheader("新しい料理の料理名を教えてください")
+    c_name = st.text_input("")
+    st.subheader("説明")
+    c_desc = st.text_area("")
+    st.subheader("お気に入り登録")
     is_favorite = st.toggle("")
 
     # 登録ボタン
-    register_btn = st.button('料理を登録')
+    register_btn = st.button("料理を登録")
     if register_btn:
         dict = []
         for food in user_food_select:
@@ -134,13 +147,13 @@ def resister_cooking():
             df_food_and_grams, df_cooking_attributes
         )
         if is_success:
-            st.success('料理を追加しました')
+            st.success("料理を追加しました")
             st.balloons()
         else:
             if msg == "same_cooking_already_exist":
-                st.error('同じ材料構成の料理が既に登録されています')
+                st.error("同じ材料構成の料理が既に登録されています")
             else:
-                st.error('料理の追加に失敗しました')
+                st.error("料理の追加に失敗しました")
     return
 
 
@@ -152,10 +165,12 @@ def start_cooking():
     df_cooking = translator.get_df_cooking()
 
     ####### ユーザー操作 ######
-    st.header('料理を作りましょう')
+    st.header("料理を作りましょう")
     # st.title("料理を作る")
-    user_input_cookingid = st.text_input('登録済みの料理からCookingIDを入力してください')
-    cooking_button = st.button('料理を作る', key='button2')
+    user_input_cookingid = st.text_input(
+        "登録済みの料理からCookingIDを入力してください"
+    )
+    cooking_button = st.button("料理を作る", key="button2")
 
     ####### データ処理 ######
     # ユーザーが入力したCookingIDが整数かどうかを検証
@@ -171,14 +186,14 @@ def start_cooking():
             if cooking_id in df_cooking["CookingID"].values:
                 # 存在する場合、料理の履歴を追加
                 translator.add_cooking_history(cooking_id)
-                st.success('料理の履歴が追加されました。')
+                st.success("料理の履歴が追加されました。")
                 st.balloons()
             else:
                 # 存在しない場合、エラーメッセージを表示
-                st.error('指定されたCookingIDは登録されていません。')
+                st.error("指定されたCookingIDは登録されていません。")
         else:
             # 整数でない入力に対するエラーメッセージ
-            st.error('無効な入力です！整数を入力してください。')
+            st.error("無効な入力です！整数を入力してください。")
     return
 
 

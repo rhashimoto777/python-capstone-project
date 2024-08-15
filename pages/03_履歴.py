@@ -1,6 +1,6 @@
-from src import frontend_main
-from src import translator
 import streamlit as st
+
+from src import frontend_main, translator
 
 st.set_page_config(layout="wide")
 
@@ -24,7 +24,7 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 
@@ -33,14 +33,14 @@ st.title("作った料理を確認しましょう")
 tab1, tab2, tab3 = st.tabs(["料理一覧", "PFCバランス", "カロリー摂取"])
 
 with tab1:
-   st.header("料理一覧")
-   frontend_main.show_cookinghistory_registered()
+    st.header("料理一覧")
+    frontend_main.show_cookinghistory_registered()
 
 with tab2:
-   st.header("PFCバランス")
-   frontend_main.show_nutrition_info_of_cooking()
+    st.header("PFCバランス")
+    frontend_main.show_nutrition_info_of_cooking()
 
 with tab3:
-   st.header("カロリー摂取")
-   with st.expander("sw"):
-      frontend_main.show_refrigerator_fooddata()
+    st.header("カロリー摂取")
+    with st.expander("sw"):
+        frontend_main.show_refrigerator_fooddata()
