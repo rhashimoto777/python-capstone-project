@@ -25,10 +25,16 @@ def show_cookings_registered():
     既に登録済みの料理を表示する。
     """
     df_cooking = translator.get_df_cooking()
-    st.header("登録済みの料理リスト")
+    # LastUpdateDateをdatetime型に変換してから分までにフォーマット
+    df_cooking['LastUpdateDate'] = pd.to_datetime(df_cooking['LastUpdateDate']).dt.strftime('%Y-%m-%d %H:%M')
+
+    # カラムの順序を変更
+    df_cooking = df_cooking[['CookingID', 'CookingName', 'IsFavorite', 'LastUpdateDate', 'Description']]
+
+    st.subheader("登録済みの料理リスト")
     # st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
     # データフレームをHTML形式に変換し、インデックスを非表示にする
-    html = df_cooking.to_html(index=False)
+    html = df_cooking.to_html(index=False, justify='left')
 
     # HTMLで表示
     st.markdown(html, unsafe_allow_html=True)
@@ -40,11 +46,11 @@ def show_refrigerator_fooddata():
     df_fooddata = translator.get_df_fooddata()
 
     # Streamlitを使ってDataFrameを表示
-    # st.header('冷蔵庫の食材はこちら')
+    st.subheader('冷蔵庫の食材と数量')
     # st.caption('「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。')
     df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on="FoodDataID")
     # HTMLでデータフレームを表示
-    html = df_refrigerator_fooddata[["FoodName", "Grams"]].to_html(index=False)
+    html = df_refrigerator_fooddata[["FoodName", "Grams"]].to_html(index=False, justify='left')
     st.markdown(html, unsafe_allow_html=True)
     return
 
@@ -53,73 +59,78 @@ def choice_food():
     global user_food_select
     df_fooddata = translator.get_df_fooddata()
     # Streamlitを使って食材選択を表示
-    st.header("使う食材と数量を選択しましょう")
+    # st.header("【使う食材と数量を選択】")
     # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
     food_options = df_fooddata["FoodName"].unique().tolist()
     # 食材を複数選択
     st.subheader("食材を選んでください")
-    selected_foods = st.multiselect("", food_options)
+    col1, col2 = st.columns(2)
+    with col1:
+        selected_foods = st.multiselect("", food_options)
 
     # 食材に対する数量を入力
-    user_food_select = []
-    total_kcal = 0
-    total_protein = 0
-    total_fat = 0
-    total_carbs = 0
+        user_food_select = []
+        total_kcal = 0
+        total_protein = 0
+        total_fat = 0
+        total_carbs = 0
 
-    for food_name in selected_foods:
-        map = df_fooddata["FoodName"] == food_name
-        dict = {}
-        dict["f_name"] = food_name
-        dict["f_id"] = df_fooddata.loc[map, "FoodDataID"].values[0]
-        dict["f_su_name"] = df_fooddata.loc[map, "StandardUnit_Name"].values[0]
-        dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
+        for food_name in selected_foods:
+            map = df_fooddata["FoodName"] == food_name
+            dict = {}
+            dict["f_name"] = food_name
+            dict["f_id"] = df_fooddata.loc[map, "FoodDataID"].values[0]
+            dict["f_su_name"] = df_fooddata.loc[map, "StandardUnit_Name"].values[0]
+            dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
-        msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-        quantity = st.number_input(msg, min_value=0, value=1)
-        dict["su_quantity"] = quantity
-        dict["g"] = quantity * dict["f_su_g"]
+            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
+            quantity = st.number_input(msg, min_value=0.0, value=1.0, step=0.1)
 
-        # 合計を計算
-        total_kcal += quantity * df_fooddata.loc[map, "Calory_Total"].values[0]
-        total_protein += quantity * df_fooddata.loc[map, "Grams_Protein"].values[0]
-        total_fat += quantity * df_fooddata.loc[map, "Grams_Fat"].values[0]
-        total_carbs += quantity * df_fooddata.loc[map, "Grams_Carbo"].values[0]
+            dict["su_quantity"] = quantity
+            dict["g"] = quantity * dict["f_su_g"]
 
-        user_food_select.append(dict)
+            # 合計を計算
+            total_kcal += quantity * df_fooddata.loc[map, "Calory_Total"].values[0]
+            total_protein += quantity * df_fooddata.loc[map, "Grams_Protein"].values[0]
+            total_fat += quantity * df_fooddata.loc[map, "Grams_Fat"].values[0]
+            total_carbs += quantity * df_fooddata.loc[map, "Grams_Carbo"].values[0]
 
-    ## 選択した食材と個数を表示
-    ## st.write("選択した食材と個数を確認:")
-    ## for food in user_food_select:
-    ##     msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
-    ##     st.write(msg)
+            user_food_select.append(dict)
 
-    ## 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
-    ## 合計値を表示
-    ## st.write("選択した食材の総カロリー:")
-    st.write(f"総カロリー: {total_kcal:.2f} kcal")
-    ## st.write(f"総タンパク質: {total_protein:.2f} g")
-    ## st.write(f"総脂質: {total_fat:.2f} g")
-    ## st.write(f"総炭水化物: {total_carbs:.2f} g")
+        ## 選択した食材と個数を表示
+        ## st.write("選択した食材と個数を確認:")
+        ## for food in user_food_select:
+        ##     msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
+        ##     st.write(msg)
 
-    # # PFCバランスの円グラフを作成
-    fig = go.Figure(
-        data=[
-            go.Pie(
-                labels=["タンパク質", "脂質", "炭水化物"],
-                values=[total_protein, total_fat, total_carbs],
-                textinfo="label+percent",
-            )
-        ]
-    )
-    st.write("PFCバランス:")
-    st.plotly_chart(fig)
-    return
+        ## 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
+        ## 合計値を表示
+        ## st.write("選択した食材の総カロリー:")
+    with col2:
+        
+        ## st.write(f"総タンパク質: {total_protein:.2f} g")
+        ## st.write(f"総脂質: {total_fat:.2f} g")
+        ## st.write(f"総炭水化物: {total_carbs:.2f} g")
+
+        # # PFCバランスの円グラフを作成
+        fig = go.Figure(
+            data=[
+                go.Pie(
+                    labels=["タンパク質", "脂質", "炭水化物"],
+                    values=[total_protein, total_fat, total_carbs],
+                    textinfo="label+percent",
+                )
+            ]
+        )
+        # st.write("PFCバランス:")
+        st.plotly_chart(fig)
+        st.write(f"総カロリー: {total_kcal:.2f} kcal")
+        return
 
 
 def resister_cooking():
     # 料理名・説明・お気に入り登録
-    st.header("新しい料理を登録しましょう")
+    # st.header("【新しい料理を登録】")
     st.subheader("新しい料理の料理名を教えてください")
     c_name = st.text_input("")
     st.subheader("説明")
@@ -169,7 +180,7 @@ def start_cooking():
     ####### ユーザー操作 ######
     # st.header('料理を作りましょう')
     # st.title("料理を作る")
-    st.header("登録済みの料理からCookingIDを入力してください")
+    st.subheader("登録済みの料理からCookingIDを入力してください")
     user_input_cookingid = st.text_input("")
     cooking_button = st.button("料理を作る", key="button2")
 
@@ -207,7 +218,7 @@ def show_nutrition_info_of_cooking():
     cooking_details = translator.get_cooking_details()
 
     # タイトル
-    st.header("食材とPFCバランス")
+    # st.header("食材とPFCバランス")
 
     for cooking_details_elem in cooking_details:
         cooking_id = cooking_details_elem["CookingID"]
@@ -258,9 +269,16 @@ def show_cookinghistory_registered():
     df_cookinghistory = translator.get_df_cookinghistory()
     df_cooking = translator.get_df_cooking()
     df_cookinghistory_cooking = df_cookinghistory.merge(df_cooking, on="CookingID")
-    st.title("過去に作った料理")
-    st.caption("「CookingHistory」内にある過去に作った料理を、UI上に表示する。")
-    st.dataframe(df_cookinghistory_cooking)
+    # st.title("過去に作った料理")
+    # st.caption("「CookingHistory」内にある過去に作った料理を、UI上に表示する。")
+    # st.dataframe(df_cookinghistory_cooking)
+
+    # LastUpdateDateをdatetime型に変換してから分までにフォーマット
+    df_cookinghistory_cooking['IssuedDate'] = pd.to_datetime(df_cookinghistory_cooking['IssuedDate']).dt.strftime('%Y-%m-%d %H:%M')
+
+    # HTMLでデータフレームを表示
+    html = df_cookinghistory_cooking[["IssuedDate", "CookingName", "Description"]].to_html(index=False, justify='left')
+    st.markdown(html, unsafe_allow_html=True)
 
     cooking_details = translator.get_cooking_details()
 
@@ -268,7 +286,7 @@ def show_cookinghistory_registered():
     過去に作った料理ごとのカロリーとPFCバランス等を表示する。
     """
 
-    st.title("過去に作った料理ごとのカロリーとPFCバランス")
+    st.subheader("過去に作った料理ごとのカロリーとPFCバランス")
 
     cooking_details_cookingid = [d.get("CookingID") for d in cooking_details]
 

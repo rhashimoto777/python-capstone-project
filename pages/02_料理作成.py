@@ -4,7 +4,7 @@ from src import frontend_main
 
 st.set_page_config(layout="wide")
 
-st.title("料理を作りましょう")
+st.title("【料理作成】")
 
 col1, col2 = st.columns(2)
 
