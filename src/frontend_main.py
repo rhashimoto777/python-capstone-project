@@ -7,6 +7,8 @@ import streamlit as st
 
 from src import translator
 
+user_food_select = None
+
 
 def main_page():
     resister_cooking()
@@ -23,8 +25,8 @@ def show_cookings_registered():
     既に登録済みの料理を表示する。
     """
     df_cooking = translator.get_df_cooking()
-    st.title("登録済みの料理")
-    st.caption("「Cooking」内にある食材の情報を、UI上に表示する。")
+    st.header("登録済みの料理リスト")
+    # st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
     st.dataframe(df_cooking)
     return
 
@@ -34,23 +36,27 @@ def show_refrigerator_fooddata():
     df_fooddata = translator.get_df_fooddata()
 
     # Streamlitを使ってDataFrameを表示
-    st.title("冷蔵庫の中にある食材の種類・数")
-    st.caption(
-        "「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。"
-    )
+    # st.header('冷蔵庫の食材はこちら')
+    # st.caption('「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。')
     df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on="FoodDataID")
-    st.dataframe(df_refrigerator_fooddata[["FoodDataID", "FoodName", "Grams"]])
+    st.dataframe(
+        df_refrigerator_fooddata[["FoodDataID", "FoodName", "Grams"]],
+        width=600,
+        height=600,
+    )
     return
 
 
-def resister_cooking():
+def choice_food():
+    global user_food_select
     df_fooddata = translator.get_df_fooddata()
-    # Streamlitを使って食材選択をスライドバー表示
-    st.sidebar.title("使う食材と数量を選択")
+    # Streamlitを使って食材選択を表示
+    st.header("使う食材と数量を選択しましょう")
     # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
     food_options = df_fooddata["FoodName"].unique().tolist()
     # 食材を複数選択
-    selected_foods = st.sidebar.multiselect("食材を選んでください", food_options)
+    st.subheader("食材を選んでください")
+    selected_foods = st.multiselect("", food_options)
 
     # 食材に対する数量を入力
     user_food_select = []
@@ -68,7 +74,7 @@ def resister_cooking():
         dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
         msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-        quantity = st.sidebar.number_input(msg, min_value=0, value=1)
+        quantity = st.number_input(msg, min_value=0, value=1)
         dict["su_quantity"] = quantity
         dict["g"] = quantity * dict["f_su_g"]
 
@@ -80,19 +86,19 @@ def resister_cooking():
 
         user_food_select.append(dict)
 
-    # 選択した食材と個数を表示
-    st.sidebar.write("選択した食材と個数を確認:")
-    for food in user_food_select:
-        msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
-        st.sidebar.write(msg)
+    ## 選択した食材と個数を表示
+    ## st.write("選択した食材と個数を確認:")
+    ## for food in user_food_select:
+    ##     msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
+    ##     st.write(msg)
 
-    # 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
-    # 合計値を表示
-    st.sidebar.write("選択した食材の総カロリー:")
-    st.sidebar.write(f"総カロリー: {total_kcal:.2f} kcal")
-    st.sidebar.write(f"総タンパク質: {total_protein:.2f} g")
-    st.sidebar.write(f"総脂質: {total_fat:.2f} g")
-    st.sidebar.write(f"総炭水化物: {total_carbs:.2f} g")
+    ## 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
+    ## 合計値を表示
+    ## st.write("選択した食材の総カロリー:")
+    st.write(f"総カロリー: {total_kcal:.2f} kcal")
+    ## st.write(f"総タンパク質: {total_protein:.2f} g")
+    ## st.write(f"総脂質: {total_fat:.2f} g")
+    ## st.write(f"総炭水化物: {total_carbs:.2f} g")
 
     # # PFCバランスの円グラフを作成
     fig = go.Figure(
@@ -104,16 +110,23 @@ def resister_cooking():
             )
         ]
     )
-    st.sidebar.write("PFCバランス:")
-    st.sidebar.plotly_chart(fig)
+    st.write("PFCバランス:")
+    st.plotly_chart(fig)
+    return
 
+
+def resister_cooking():
     # 料理名・説明・お気に入り登録
-    c_name = st.sidebar.text_input("新しい料理の料理名を教えてください")
-    c_desc = st.sidebar.text_area("説明")
-    is_favorite = st.sidebar.toggle("お気に入り登録")
+    st.header("新しい料理を登録しましょう")
+    st.subheader("新しい料理の料理名を教えてください")
+    c_name = st.text_input("")
+    st.subheader("説明")
+    c_desc = st.text_area("")
+    st.subheader("お気に入り登録")
+    is_favorite = st.toggle("")
 
     # 登録ボタン
-    register_btn = st.sidebar.button("料理を登録")
+    register_btn = st.button("料理を登録")
     if register_btn:
         dict = []
         for food in user_food_select:
@@ -134,12 +147,13 @@ def resister_cooking():
             df_food_and_grams, df_cooking_attributes
         )
         if is_success:
-            st.sidebar.success("料理を追加しました")
+            st.success("料理を追加しました")
+            st.balloons()
         else:
             if msg == "same_cooking_already_exist":
-                st.sidebar.error("同じ材料構成の料理が既に登録されています")
+                st.error("同じ材料構成の料理が既に登録されています")
             else:
-                st.sidebar.error("料理の追加に失敗しました")
+                st.error("料理の追加に失敗しました")
     return
 
 
@@ -151,11 +165,12 @@ def start_cooking():
     df_cooking = translator.get_df_cooking()
 
     ####### ユーザー操作 ######
-    st.sidebar.title("料理を作る")
-    user_input_cookingid = st.sidebar.text_input(
+    st.header("料理を作りましょう")
+    # st.title("料理を作る")
+    user_input_cookingid = st.text_input(
         "登録済みの料理からCookingIDを入力してください"
     )
-    cooking_button = st.sidebar.button("料理を作る", key="button2")
+    cooking_button = st.button("料理を作る", key="button2")
 
     ####### データ処理 ######
     # ユーザーが入力したCookingIDが整数かどうかを検証
@@ -171,13 +186,14 @@ def start_cooking():
             if cooking_id in df_cooking["CookingID"].values:
                 # 存在する場合、料理の履歴を追加
                 translator.add_cooking_history(cooking_id)
-                st.sidebar.success("料理の履歴が追加されました。")
+                st.success("料理の履歴が追加されました。")
+                st.balloons()
             else:
                 # 存在しない場合、エラーメッセージを表示
-                st.sidebar.error("指定されたCookingIDは登録されていません。")
+                st.error("指定されたCookingIDは登録されていません。")
         else:
             # 整数でない入力に対するエラーメッセージ
-            st.sidebar.error("無効な入力です！整数を入力してください。")
+            st.error("無効な入力です！整数を入力してください。")
     return
 
 
@@ -190,7 +206,7 @@ def show_nutrition_info_of_cooking():
     cooking_details = translator.get_cooking_details()
 
     # タイトル
-    st.title("料理ごとのカロリーとPFCバランス")
+    st.header("食材とPFCバランス")
 
     for cooking_details_elem in cooking_details:
         cooking_id = cooking_details_elem["CookingID"]
