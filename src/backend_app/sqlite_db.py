@@ -6,8 +6,9 @@ from contextlib import contextmanager
 
 import pandas as pd
 
+from src import util
 from src.backend_app import backend_common as common
-from src.datatype.my_enum import TableName, DataBaseFileCommand
+from src.datatype.my_enum import PFC, DataBaseFileCommand, TableName
 from src.datatype.my_struct import DataValidationError, RawDataFrame
 
 
@@ -108,28 +109,25 @@ class DataBaseOperator(DataBaseCommon):
         return
 
     def database_file_command(self, command: DataBaseFileCommand):
-        match command:
-            case DataBaseFileCommand.DeleteDB_and_CreateBlankDB:
-                self.creator.remove_db()
-                self.creator.create_new_db()
-            case DataBaseFileCommand.DeleteDB_and_RestoreFromBackup:
-                if self.creator.is_db_bk_exist:
-                    self.creator.remove_db()
-                    self.creator.restore_db_from_backup()
-                else:
-                    raise Exception(
-                        f"DataBaseのBackupファイルが存在しません。path = {self.creator.db_bk_path}"
-                    )
-            case DataBaseFileCommand.OverwriteBackupWithCurrentDB:
-                if self.creator.is_db_exist:
-                    self.creator.overwrite_bk()
-                else:
-                    raise Exception(
-                        f"DataBaseファイルが存在しません。path = {self.creator.db_path}"
-                    )
-            case _:
-                raise Exception(f"無効な指示です。 command = {command}")
+        try:
+            match command:
+                case DataBaseFileCommand.DeleteDB_and_CreateBlankDB:
+                    self.creator.delete_db_and_create_new_db()
+                case DataBaseFileCommand.DeleteDB_and_RestoreFromBackup:
+                    self.creator.delete_db_and_restore_from_bk()
+                case DataBaseFileCommand.OverwriteBackupWithCurrentDB:
+                    self.creator.overwrite_bk_with_db()
+                case _:
+                    raise ValueError(f"無効な指示です。 command = {command}")
+        except Exception as e:
+            raise Exception(f"database_file_command error : {e}")
         return
+
+    def check_database_file_exist(self, is_bk: bool = False):
+        if is_bk:
+            return self.creator.is_db_bk_exist
+        else:
+            return self.creator.is_db_exist
 
 
 # _________________________________________________________________________________________________________________________
@@ -151,9 +149,35 @@ class DataBaseCreator(DataBaseCommon):
 
         if not self.is_db_exist:
             if self.is_db_bk_exist:
-                self.restore_db_from_backup()
+                self._restore_db_from_backup()
             else:
-                self.create_new_db()
+                self._create_new_db()
+        return
+
+    def delete_db_and_create_new_db(self):
+        self.remove_db()
+        self._create_new_db()
+        return
+
+    def delete_db_and_restore_from_bk(self):
+        if self.is_db_bk_exist:
+            self.remove_db()
+            self._restore_db_from_backup()
+        else:
+            raise FileNotFoundError(
+                f"DataBaseのBackupファイルが存在しません。path = {self.db_bk_path}"
+            )
+        return
+
+    def overwrite_bk_with_db(self):
+        if self.creator.is_db_exist:
+            if self.is_db_bk_exist:
+                os.remove(self.db_bk_path)
+            shutil.copy(src=self.db_path, dst=self.db_bk_path)
+        else:
+            raise FileNotFoundError(
+                f"DataBaseファイルが存在しません。path = {self.db_path}"
+            )
         return
 
     def remove_db(self):
@@ -161,17 +185,7 @@ class DataBaseCreator(DataBaseCommon):
             os.remove(self.db_path)
         return
 
-    def overwrite_bk(self):
-        if not self.is_db_exist:
-            return
-
-        if self.is_db_bk_exist:
-            os.remove(self.db_bk_path)
-
-        shutil.copy(src=self.db_path, dst=self.db_bk_path)
-        return
-
-    def restore_db_from_backup(self):
+    def _restore_db_from_backup(self):
         """
         DBのバックアップファイルが存在し、かつcooking_system.dbが存在しないとき、バックアップからコピーしてcooking_system.dbを作る。
         「cooking_system.dbは実行状態に依存して頻繁に変わるため.gitignoreに登録しているが、一方でGitHub上にデフォルトのDBは登録しておきたい」
@@ -184,7 +198,7 @@ class DataBaseCreator(DataBaseCommon):
             )
         return
 
-    def create_new_db(self):
+    def _create_new_db(self):
         self.__create_blank_db()
         self.__load_fooddata_json()
         return
@@ -192,11 +206,10 @@ class DataBaseCreator(DataBaseCommon):
     def __load_fooddata_json(self):
         """
         FoodDataのjsonを読み込み、DBのFoodDataテーブルに書き込む。
-        起動時1回しか読まない想定なのでprivate関数にしておく。
 
-        また、P/F/Cのグラム数を単純に4/9/4倍すると、P/F/Cの合計カロリーが総カロリーを超えることがある。
+        このとき、P/F/Cのグラム数を単純に4/9/4倍すると、P/F/Cの合計カロリーが総カロリーを超えることがある。
         これは明らかに不整合であり、「P/F/Cのグラム数」「P/F/Cのカロリー」「食材の総カロリー」の
-        いずれかを補正する必要があるが、総カロリーを補正する方針とする。
+        いずれかを補正する必要があるが、「食材の総カロリー」を補正する方針とする。
         """
         # jsonの読み込み
         os.chdir(common.FOODDATA_JSON_PATH)
@@ -205,9 +218,9 @@ class DataBaseCreator(DataBaseCommon):
         df = pd.DataFrame(data)
 
         # Protein / Fat / Carbo由来のカロリーを計算する
-        df["Calory_Protein"] = df["Grams_Protein"] * 4.0
-        df["Calory_Fat"] = df["Grams_Fat"] * 9.0
-        df["Calory_Carbo"] = df["Grams_Carbo"] * 4.0
+        df["Calory_Protein"] = util.g_to_kcal(df["Grams_Protein"], PFC.Protein)
+        df["Calory_Fat"] = util.g_to_kcal(df["Grams_Fat"], PFC.Fat)
+        df["Calory_Carbo"] = util.g_to_kcal(df["Grams_Carbo"], PFC.Carbo)
 
         # P/F/Cの合計カロリーが総カロリーを超えないよう、総カロリーを補正する。
         df["tmp_Calory_PFC"] = (
@@ -217,12 +230,15 @@ class DataBaseCreator(DataBaseCommon):
         for i in range(len(df[mask])):
             # システムメッセージを表示する
             elem = df[mask].iloc[i]
-            msg = "FoodDataテーブルにおいて、"
-            msg += f'「{elem.loc["FoodName"]}」の「PFC合計カロリー({elem.loc["tmp_Calory_PFC"]:.1f})」が'
-            msg += (
-                f'「食材の総カロリー({elem.loc["Calory_Total"]:.1f})」を超えています。'
+            food_name = elem.loc["FoodName"]
+            pfc_calory = elem.loc["tmp_Calory_PFC"]
+            total_calory = elem.loc["Calory_Total"]
+
+            msg = (
+                f"FoodDataテーブルにおいて、「{food_name}」の「PFC合計カロリー({pfc_calory:.1f})」が"
+                f"「食材の総カロリー({total_calory:.1f})」を超えています。"
+                f"値の整合のため、「総カロリー」を{pfc_calory:.1f}に置き換えます。"
             )
-            msg += f'値の整合のため、「総カロリー」を{elem.loc["tmp_Calory_PFC"]:.1f}に置き換えます。'
             common.system_msg_print(msg)
         df.loc[mask, "Calory_Total"] = df.loc[mask, "tmp_Calory_PFC"]
         df = df.drop(columns=["tmp_Calory_PFC"])
