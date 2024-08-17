@@ -24,7 +24,7 @@ class BackEndOperator(Singleton):
 
     # ________________________________________________________________________________________________________________________
     # global関数群
-    def get_df_from_db(self):
+    def get_raw_df(self):
         """
         classの外側にDBに対応するDataFrameを返す。
         頻繁に呼ばれる関数であるため、動作が遅くならないようにこの関数内でDBからのpull (__pull_df_from_db) は行わない。

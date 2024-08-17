@@ -20,48 +20,48 @@ def get_df_all() -> dict:
     df_xxx = raw_df["テーブル名"]
     のようにアクセスすれば個別テーブルのDataFrameを取得できる。
     """
-    return backend_op.get_df_from_db()
+    return backend_op.get_raw_df()
 
 
 def get_df_fooddata():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_fooddata
 
 
 def get_df_cookingfooddata():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_cookingfooddata
 
 
 def get_df_cooking():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_cooking
 
 
 def get_df_cookinghistory():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_cookinghistory
 
 
 def get_df_refrigerator():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_refrigerator
 
 
 def get_df_shoppingfooddata():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_shoppingfooddata
 
 
 def get_df_shoppinghistory():
     """個別テーブルのDataFrameを取得する。"""
-    raw_df = backend_op.get_df_from_db()
+    raw_df = backend_op.get_raw_df()
     return raw_df.df_shoppinghistory
 
 
