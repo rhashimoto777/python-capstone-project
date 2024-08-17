@@ -3,8 +3,9 @@ from datetime import datetime
 import pandas as pd
 
 from src.backend_app import backend_common as common
-from src.backend_app import fooddata, sqlite_db
+from src.backend_app import df_analysis, fooddata, sqlite_db
 from src.datatype.my_enum import TableName
+from src.datatype.my_struct import RawDataFrame
 
 
 class Singleton(object):
@@ -21,17 +22,18 @@ class BackEndOperator(Singleton):
         fooddata.init()
         self.db_operator = sqlite_db.DataBaseOperator()
         self.raw_df = None
+        self.cooking_info_list = None
         self.__pull_df_from_db()
 
     # ________________________________________________________________________________________________________________________
     # global関数群
-    def get_raw_df(self):
+    def get_raw_df(self) -> RawDataFrame:
         """
-        classの外側にDBに対応するDataFrameを返す。
-        頻繁に呼ばれる関数であるため、動作が遅くならないようにこの関数内でDBからのpull (__pull_df_from_db) は行わない。
-        代わりにDBにpushした直後に確実にpullが行われるようにすることで、DBとの乖離無き事を担保する。
-        ( そのためには、BackEndOperatorのインスタンスが1つだけである必要がある )
+        DataBaseから読み込んだ生のDataFrame情報を返す
         """
+        # 頻繁に呼ばれる関数であるため、動作が遅くならないようにこの関数内でDBからのpull (__pull_df_from_db) は行わない。
+        # 代わりにDBにpushした直後に確実にpullが行われるようにすることで、DBとの乖離無き事を担保する。
+        # ( そのためには、BackEndOperatorのインスタンスが1つだけである必要がある )
         return self.raw_df
 
     def get_cooking_details(self):
@@ -228,6 +230,7 @@ class BackEndOperator(Singleton):
         SQLiteDBをDataFrameに変換し、classのメンバ変数に上書きする。
         """
         self.raw_df = self.db_operator.get_raw_df()
+        self.cooking_info_list = df_analysis.gen_cooking_info_list(self.raw_df)
         return
 
     def __push_df_to_db_by_append(self, table_name, df):
