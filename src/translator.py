@@ -74,11 +74,6 @@ def get_cooking_info_list() -> myst.CookingInfoList:
     return backend_op.cooking_info_list
 
 
-def check_possible_to_make_cooking(cooking_id):
-    """backend_main.py内の説明を参照"""
-    backend_op.check_possible_to_make_cooking(cooking_id)
-
-
 # _______________________________________________________________________
 #                      Set系関数群：何らかDBに値を書き込む操作
 # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/

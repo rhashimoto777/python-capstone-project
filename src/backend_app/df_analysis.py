@@ -1,4 +1,5 @@
 from dataclasses import replace
+from datetime import datetime
 from typing import Optional, Tuple
 
 import pandas as pd
@@ -206,3 +207,74 @@ def judge_same_cooking_already_exist(
         if judge_df_are_equal(df1, df2):
             return eck.cooking_id
     return None
+
+
+def gen_df_to_add_cooking_history(
+    raw_df: myst.RawDataFrame, cooking_list: myst.CookingInfoList, cooking_id: int
+) -> Tuple[bool, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    cooking_info = convert_cooking_id_to_cooking_info(cooking_list, cooking_id)
+    if cooking_info is None:
+        raise ValueError(f"存在しないcooking_id{cooking_id}が入力されました")
+
+    # 冷蔵庫内に必要な材料が十分なグラム数あるかを確認する。
+    fg_can_cook, df_rf_after_cooking = check_possible_to_make_cooking(cooking_info)
+
+    if fg_can_cook:
+        h_id = __issue_new_id(raw_df.df_cookinghistory["CookingHistoryID"].tolist())
+
+        dict_cookinghistory = []
+        dict_cookinghistory.append(
+            {
+                "CookingHistoryID": h_id,
+                "CookingID": cooking_id,
+                "IssuedDate": datetime.now(),
+            }
+        )
+        return fg_can_cook, pd.DataFrame(dict_cookinghistory), df_rf_after_cooking
+    else:
+        return fg_can_cook, None, None
+
+
+def convert_cooking_id_to_cooking_info(
+    cooking_list: myst.CookingInfoList, cooking_id: int
+) -> Optional[myst.CookingInfo]:
+    cooking_info = None
+    for ck in cooking_list.cookings:
+        if cooking_id == ck.cooking_id:
+            cooking_info = ck
+            break
+    return cooking_info
+
+
+def check_possible_to_make_cooking(
+    raw_df: myst.RawDataFrame, cookinf_info: myst.CookingInfo
+):
+    """
+    IDで指定された料理を1食作るのに必要な材料が冷蔵庫にあるかどうかを確認する。
+    返り値は2つである。
+        第1返り値 : 料理を作ることが可能かどうかを表すboolean
+        第2返り値 : 料理を作ることが可能なとき、料理の材料分を引いた冷蔵庫のDataFrameを返す。
+                    (料理を作ることができないときはNoneを返す)
+    """
+    df_rfrg = raw_df.df_refrigerator
+    df_rfrg_after_cooking = df_rfrg
+
+    is_possible_to_make_cooking = True
+    for food in cookinf_info.food_attribute:
+        # 料理に使う食材のIDと必要なグラム数を取得する
+        food_id = food.fooddata_id
+        c_food_gram = food.grams_total
+
+        # 対応する食材の冷蔵庫内のグラム数を取得する
+        df_rfrg_fid = df_rfrg[df_rfrg["FoodDataID"] == food_id]
+        r_food_gram = df_rfrg_fid["Grams"].values[0]
+
+        # 冷蔵庫内のグラム数が料理に必要なグラム数より多いかどうかを判定する
+        if r_food_gram >= c_food_gram:
+            df_rfrg_after_cooking.loc[df_rfrg_fid.index, "Grams"] -= c_food_gram
+        else:
+            is_possible_to_make_cooking = False
+            df_rfrg_after_cooking = None
+            break
+
+    return is_possible_to_make_cooking, df_rfrg_after_cooking
