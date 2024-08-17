@@ -147,32 +147,54 @@ def resister_cooking():
     # 登録ボタン
     register_btn = st.button("料理を登録")
     if register_btn:
-        dict = []
+        food_attribute = []
         for food in user_food_select:
-            dict.append({"FoodDataID": food["f_id"], "Grams": food["g"]})
-        df_food_and_grams = pd.DataFrame(dict)
+            f_elem = translator.gen_food_info(food_id=food["f_id"], grams=food["g"])
+            food_attribute.append(f_elem)
 
-        dict = []
-        dict.append(
-            {
-                "CookingName": c_name,
-                "isFavorite": is_favorite,
-                "LastUpdateDate": datetime.now(),
-                "Description": c_desc,
-            }
+        cooking_info = translator.gen_cooking_info(
+            cooking_name=c_name,
+            is_favorite=is_favorite,
+            last_update_date=datetime.now(),
+            description=c_desc,
+            food_attr=food_attribute,
         )
-        df_cooking_attributes = pd.DataFrame(dict)
-        is_success, msg = translator.add_cooking(
-            df_food_and_grams, df_cooking_attributes
-        )
-        if is_success:
-            st.success("料理を追加しました")
-            st.balloons()
-        else:
-            if msg == "same_cooking_already_exist":
-                st.error("同じ材料構成の料理が既に登録されています")
-            else:
+        if translator.judge_is_new_cooking(cooking_info):
+            try:
+                translator.register_new_cooking(cooking_info)
+                st.success("料理を追加しました")
+                st.balloons()
+            except Exception:
                 st.error("料理の追加に失敗しました")
+        else:
+            st.error("同じ材料構成の料理が既に登録されています")
+
+        # dict = []
+        # for food in user_food_select:
+        #     dict.append({"FoodDataID": food["f_id"], "Grams": food["g"]})
+        # df_food_and_grams = pd.DataFrame(dict)
+
+        # dict = []
+        # dict.append(
+        #     {
+        #         "CookingName": c_name,
+        #         "isFavorite": is_favorite,
+        #         "LastUpdateDate": datetime.now(),
+        #         "Description": c_desc,
+        #     }
+        # )
+        # df_cooking_attributes = pd.DataFrame(dict)
+        # is_success, msg = translator.add_cooking(
+        #     df_food_and_grams, df_cooking_attributes
+        # )
+        # if is_success:
+        #     st.success("料理を追加しました")
+        #     st.balloons()
+        # else:
+        #     if msg == "same_cooking_already_exist":
+
+        #     else:
+        #         st.error("料理の追加に失敗しました")
     return
 
 

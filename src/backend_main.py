@@ -62,7 +62,9 @@ class BackEndOperator(Singleton):
         return
 
     def judge_same_cooking_already_exist(self, cooking_info: myst.CookingInfo):
-        return df_analysis(self.cooking_info_list, cooking_info)
+        return df_analysis.judge_same_cooking_already_exist(
+            self.cooking_info_list, cooking_info
+        )
 
     def check_possible_to_make_cooking(self, cooking_id):
         """
