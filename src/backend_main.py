@@ -218,7 +218,7 @@ class BackEndOperator(Singleton):
         """
         Refrigeratorテーブルの中身を置き換える。 (ユーザーが直接Refrigeratorの中身を編集するような操作に対応)
         """
-        self.__push_df_to_db_by_replace(TableName.REFRIGERATOR, df_refrigerator)
+        self.__push_df_to_db_by_replace(TableName.Refrigerator, df_refrigerator)
         return
 
     # ________________________________________________________________________________________________________________________

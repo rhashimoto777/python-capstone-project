@@ -8,10 +8,16 @@ class PFC(Enum):
 
 
 class TableName(Enum):
-    FOODDATA = "FoodData"
-    COOKING_FOOD_DATA = "CookingFoodData"
-    COOKING = "Cooking"
-    COOKING_HISTORY = "CookingHistory"
-    REFRIGERATOR = "Refrigerator"
-    SHOPPING_FOOD_DATA = "ShoppingFoodData"
-    SHOPPING_HISTORY = "ShoppingHistory"
+    FoodData = "FoodData"
+    CookingFoodData = "CookingFoodData"
+    Cooking = "Cooking"
+    CookingHistory = "CookingHistory"
+    Refrigerator = "Refrigerator"
+    ShoppingFoodData = "ShoppingFoodData"
+    ShoppingHistory = "ShoppingHistory"
+
+
+class DataBaseFileCommand(Enum):
+    DeleteDB_and_CreateBlankDB = 1
+    DeleteDB_and_RestoreFromBackup = 2
+    OverwriteBackupWithCurrentDB = 3

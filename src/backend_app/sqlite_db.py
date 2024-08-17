@@ -7,7 +7,7 @@ from contextlib import contextmanager
 import pandas as pd
 
 from src.backend_app import backend_common as common
-from src.datatype.my_enum import TableName
+from src.datatype.my_enum import TableName, DataBaseFileCommand
 from src.datatype.my_struct import DataValidationError, RawDataFrame
 
 
@@ -53,13 +53,13 @@ class DataBaseOperator(DataBaseCommon):
         # DBからDataFrameを読み込む。
         df_dict = {}
         table_names = [
-            TableName.FOODDATA,
-            TableName.COOKING,
-            TableName.COOKING_FOOD_DATA,
-            TableName.COOKING_HISTORY,
-            TableName.REFRIGERATOR,
-            TableName.SHOPPING_FOOD_DATA,
-            TableName.SHOPPING_HISTORY,
+            TableName.FoodData,
+            TableName.Cooking,
+            TableName.CookingFoodData,
+            TableName.CookingHistory,
+            TableName.Refrigerator,
+            TableName.ShoppingFoodData,
+            TableName.ShoppingHistory,
         ]
         with self.get_connection_to_db() as conn:
             for name in table_names:
@@ -71,13 +71,13 @@ class DataBaseOperator(DataBaseCommon):
         # RawDataFrameデータクラスを生成する。
         try:
             raw_df = RawDataFrame(
-                df_fooddata=df_dict[TableName.FOODDATA],
-                df_cooking=df_dict[TableName.COOKING],
-                df_cookingfooddata=df_dict[TableName.COOKING_FOOD_DATA],
-                df_cookinghistory=df_dict[TableName.COOKING_HISTORY],
-                df_refrigerator=df_dict[TableName.REFRIGERATOR],
-                df_shoppingfooddata=df_dict[TableName.SHOPPING_FOOD_DATA],
-                df_shoppinghistory=df_dict[TableName.SHOPPING_HISTORY],
+                df_fooddata=df_dict[TableName.FoodData],
+                df_cooking=df_dict[TableName.Cooking],
+                df_cookingfooddata=df_dict[TableName.CookingFoodData],
+                df_cookinghistory=df_dict[TableName.CookingHistory],
+                df_refrigerator=df_dict[TableName.Refrigerator],
+                df_shoppingfooddata=df_dict[TableName.ShoppingFoodData],
+                df_shoppinghistory=df_dict[TableName.ShoppingHistory],
             )
         except DataValidationError as e:
             raise DataValidationError(f"Data Validation Error: {e}")
@@ -107,6 +107,30 @@ class DataBaseOperator(DataBaseCommon):
             print(f"Error : {e}")
         return
 
+    def database_file_command(self, command: DataBaseFileCommand):
+        match command:
+            case DataBaseFileCommand.DeleteDB_and_CreateBlankDB:
+                self.creator.remove_db()
+                self.creator.create_new_db()
+            case DataBaseFileCommand.DeleteDB_and_RestoreFromBackup:
+                if self.creator.is_db_bk_exist:
+                    self.creator.remove_db()
+                    self.creator.restore_db_from_backup()
+                else:
+                    raise Exception(
+                        f"DataBaseのBackupファイルが存在しません。path = {self.creator.db_bk_path}"
+                    )
+            case DataBaseFileCommand.OverwriteBackupWithCurrentDB:
+                if self.creator.is_db_exist:
+                    self.creator.overwrite_bk()
+                else:
+                    raise Exception(
+                        f"DataBaseファイルが存在しません。path = {self.creator.db_path}"
+                    )
+            case _:
+                raise Exception(f"無効な指示です。 command = {command}")
+        return
+
 
 # _________________________________________________________________________________________________________________________
 class DataBaseCreator(DataBaseCommon):
@@ -116,32 +140,53 @@ class DataBaseCreator(DataBaseCommon):
 
     def __init__(self) -> None:
         common.init()  # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
-        self.__restore_db_file_from_backup()
-        self.__create_db()
-        self.__load_fooddata_json()
 
-    @staticmethod
-    def __restore_db_file_from_backup():
+        # 「DataBaseの本ファイル」「DataBaseのBackupファイル」のPathを取得
+        self.db_path = os.path.join(common.DB_PATH, common.DB_FILENAME)
+        self.db_bk_path = os.path.join(common.DB_PATH, common.DB_BACKUP_FILENAME)
+
+        # 「DataBaseの本ファイル」「DataBaseのBackupファイル」が存在するかを判定
+        self.is_db_exist: bool = os.path.exists(self.db_path)
+        self.is_db_bk_exist: bool = os.path.exists(self.db_bk_path)
+
+        if not self.is_db_exist:
+            if self.is_db_bk_exist:
+                self.restore_db_from_backup()
+            else:
+                self.create_new_db()
+        return
+
+    def remove_db(self):
+        if self.is_db_exist:
+            os.remove(self.db_path)
+        return
+
+    def overwrite_bk(self):
+        if not self.is_db_exist:
+            return
+
+        if self.is_db_bk_exist:
+            os.remove(self.db_bk_path)
+
+        shutil.copy(src=self.db_path, dst=self.db_bk_path)
+        return
+
+    def restore_db_from_backup(self):
         """
         DBのバックアップファイルが存在し、かつcooking_system.dbが存在しないとき、バックアップからコピーしてcooking_system.dbを作る。
         「cooking_system.dbは実行状態に依存して頻繁に変わるため.gitignoreに登録しているが、一方でGitHub上にデフォルトのDBは登録しておきたい」
         という背景から本関数を用意している。 (主に初回起動時に1回だけcallすることを想定している)
         """
-        # コピー元ファイル (=バックアップファイル)
-        src = os.path.join(common.DB_PATH, common.DB_BACKUP_FILENAME)
-        # コピー先ファイル
-        dst = os.path.join(common.DB_PATH, common.DB_FILENAME)
-
-        is_src_file_exist = os.path.exists(src)
-        is_dst_file_exist = os.path.exists(dst)
-
-        if is_src_file_exist and (not is_dst_file_exist):
-            # バックアップファイルが存在し、かつコピー先ファイルが存在しない場合のみ、
-            # バックアップファイルをコピーしてDBファイルを作る
-            shutil.copy(src, dst)
+        if self.is_db_bk_exist and (not self.is_db_exist):
+            shutil.copy(src=self.db_bk_path, dst=self.db_path)
             common.system_msg_print(
                 f'Restored "{common.DB_FILENAME}" from "{common.DB_BACKUP_FILENAME}"'
             )
+        return
+
+    def create_new_db(self):
+        self.__create_blank_db()
+        self.__load_fooddata_json()
         return
 
     def __load_fooddata_json(self):
@@ -187,7 +232,7 @@ class DataBaseCreator(DataBaseCommon):
             df.to_sql("FoodData", conn, if_exists="replace", index=False)
         return
 
-    def __create_db(self):
+    def __create_blank_db(self):
         """
         DBを作成する。DBが既に存在する場合は何もしない。
         """
@@ -200,7 +245,7 @@ class DataBaseCreator(DataBaseCommon):
             # FoodDataテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.FOODDATA.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.FoodData.value} (
                     FoodDataID INTEGER PRIMARY KEY,
                     FoodName TEXT,
                     Calory_Total REAL,
@@ -219,7 +264,7 @@ class DataBaseCreator(DataBaseCommon):
             # CookingFoodDataテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.COOKING_FOOD_DATA.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.CookingFoodData.value} (
                     CookingID INTEGER,
                     FoodDataID INTEGER,
                     Grams REAL,
@@ -232,7 +277,7 @@ class DataBaseCreator(DataBaseCommon):
             # Cookingテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.COOKING.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.Cooking.value} (
                     CookingID INTEGER PRIMARY KEY,
                     CookingName TEXT,
                     IsFavorite BOOLEAN,
@@ -245,7 +290,7 @@ class DataBaseCreator(DataBaseCommon):
             # CookingHistoryテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.COOKING_HISTORY.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.CookingHistory.value} (
                     CookingHistoryID INTEGER PRIMARY KEY,
                     CookingID INTEGER,
                     IssuedDate DATETIME,
@@ -257,7 +302,7 @@ class DataBaseCreator(DataBaseCommon):
             # Refrigeratorテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.REFRIGERATOR.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.Refrigerator.value} (
                     FoodDataID INTEGER UNIQUE,
                     Grams REAL,
                     FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
@@ -268,7 +313,7 @@ class DataBaseCreator(DataBaseCommon):
             # ShoppingFoodDataテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.SHOPPING_FOOD_DATA.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.ShoppingFoodData.value} (
                     ShoppingHistoryID INTEGER,
                     FoodDataID INTEGER,
                     Grams REAL,
@@ -281,7 +326,7 @@ class DataBaseCreator(DataBaseCommon):
             # ShoppingHistoryテーブルの作成
             cursor.execute(
                 f"""
-                CREATE TABLE IF NOT EXISTS {TableName.SHOPPING_HISTORY.value} (
+                CREATE TABLE IF NOT EXISTS {TableName.ShoppingHistory.value} (
                     ShoppingHistoryID INTEGER PRIMARY KEY,
                     IssuedDate DATETIME
                 )
