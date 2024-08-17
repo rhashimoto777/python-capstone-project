@@ -26,15 +26,19 @@ def show_cookings_registered():
     """
     df_cooking = translator.get_df_cooking()
     # LastUpdateDateをdatetime型に変換してから分までにフォーマット
-    df_cooking['LastUpdateDate'] = pd.to_datetime(df_cooking['LastUpdateDate']).dt.strftime('%Y-%m-%d %H:%M')
+    df_cooking["LastUpdateDate"] = pd.to_datetime(
+        df_cooking["LastUpdateDate"]
+    ).dt.strftime("%Y-%m-%d %H:%M")
 
     # カラムの順序を変更
-    df_cooking = df_cooking[['CookingID', 'CookingName', 'IsFavorite', 'LastUpdateDate', 'Description']]
+    df_cooking = df_cooking[
+        ["CookingID", "CookingName", "IsFavorite", "LastUpdateDate", "Description"]
+    ]
 
     st.subheader("登録済みの料理リスト")
     # st.caption('「Cooking」内にある食材の情報を、UI上に表示する。')
     # データフレームをHTML形式に変換し、インデックスを非表示にする
-    html = df_cooking.to_html(index=False, justify='left')
+    html = df_cooking.to_html(index=False, justify="left")
 
     # HTMLで表示
     st.markdown(html, unsafe_allow_html=True)
@@ -46,11 +50,13 @@ def show_refrigerator_fooddata():
     df_fooddata = translator.get_df_fooddata()
 
     # Streamlitを使ってDataFrameを表示
-    st.subheader('冷蔵庫の食材と数量')
+    st.subheader("冷蔵庫の食材と数量")
     # st.caption('「Refrigerator」内にある食材の情報を、「Refrigerator」」と「FoodData」のDataframeを参照して、UI上に表示する。')
     df_refrigerator_fooddata = df_refrigerator.merge(df_fooddata, on="FoodDataID")
     # HTMLでデータフレームを表示
-    html = df_refrigerator_fooddata[["FoodName", "Grams"]].to_html(index=False, justify='left')
+    html = df_refrigerator_fooddata[["FoodName", "Grams"]].to_html(
+        index=False, justify="left"
+    )
     st.markdown(html, unsafe_allow_html=True)
     return
 
@@ -68,7 +74,7 @@ def choice_food():
     with col1:
         selected_foods = st.multiselect("", food_options)
 
-    # 食材に対する数量を入力
+        # 食材に対する数量を入力
         user_food_select = []
         total_kcal = 0
         total_protein = 0
@@ -107,7 +113,7 @@ def choice_food():
         ## 合計値を表示
         ## st.write("選択した食材の総カロリー:")
     with col2:
-        
+
         ## st.write(f"総タンパク質: {total_protein:.2f} g")
         ## st.write(f"総脂質: {total_fat:.2f} g")
         ## st.write(f"総炭水化物: {total_carbs:.2f} g")
@@ -274,10 +280,14 @@ def show_cookinghistory_registered():
     # st.dataframe(df_cookinghistory_cooking)
 
     # LastUpdateDateをdatetime型に変換してから分までにフォーマット
-    df_cookinghistory_cooking['IssuedDate'] = pd.to_datetime(df_cookinghistory_cooking['IssuedDate']).dt.strftime('%Y-%m-%d %H:%M')
+    df_cookinghistory_cooking["IssuedDate"] = pd.to_datetime(
+        df_cookinghistory_cooking["IssuedDate"]
+    ).dt.strftime("%Y-%m-%d %H:%M")
 
     # HTMLでデータフレームを表示
-    html = df_cookinghistory_cooking[["IssuedDate", "CookingName", "Description"]].to_html(index=False, justify='left')
+    html = df_cookinghistory_cooking[
+        ["IssuedDate", "CookingName", "Description"]
+    ].to_html(index=False, justify="left")
     st.markdown(html, unsafe_allow_html=True)
 
     cooking_details = translator.get_cooking_details()

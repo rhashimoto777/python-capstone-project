@@ -15,7 +15,7 @@ st.set_page_config(
 #     """
 #     <style>
 #     /* マルチセレクトを含むすべての入力部分の幅を狭くする */
-#     div[data-baseweb="input"] > div, 
+#     div[data-baseweb="input"] > div,
 #     div[data-baseweb="select"] > div,
 #     div[data-baseweb="textarea"] > div,
 #     div[data-baseweb="checkbox"] > div {
@@ -29,7 +29,7 @@ st.title("【料理登録】")
 
 col1, col2 = st.columns(2)
 with col1:
-    
+
     frontend_main.choice_food()
     frontend_main.resister_cooking()
 
