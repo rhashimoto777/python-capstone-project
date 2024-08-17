@@ -64,9 +64,6 @@ def get_df_shoppinghistory() -> pd.DataFrame:
 # _______________________________________________________________________
 #                      Get系関数群：各種解釈情報の取得
 # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
-def get_cooking_details() :
-    """backend_main.py内の説明を参照"""
-    return backend_op.get_cooking_details()
 
 def get_cooking_info_list() -> my_struct.CookingInfoList:
     return backend_op.cooking_info_list

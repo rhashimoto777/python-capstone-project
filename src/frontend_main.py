@@ -221,34 +221,22 @@ def show_nutrition_info_of_cooking():
     『CookingIDごとの「料理の総カロリー」、「PFCそれぞれのグラム量」、「PFCそれぞれのカロリー量」』
     に相当する情報の取得方法とデータ利用方法についてのデモ。
     """
-    cooking_details = translator.get_cooking_details()
+    cooking_info_list = translator.get_cooking_info_list()
 
     # タイトル
     # st.header("食材とPFCバランス")
 
-    for cooking_details_elem in cooking_details:
-        cooking_id = cooking_details_elem["CookingID"]
-        cooking_attribute = cooking_details_elem["CookingAttribute"]
-        food_attribute = cooking_details_elem["FoodAttribute"]
+    for ck in cooking_info_list.cookings:
+        st.subheader(f"{ck.cooking_id} : {ck.cooking_name}")
+        # st.write(cooking_attribute)
+        # st.table(food_attribute)
 
-        cooking_name = cooking_attribute["CookingName"].values[0]
-
-        st.subheader(f"{cooking_id} : {cooking_name}")
-        st.write(cooking_attribute)
-        st.table(food_attribute)
-
-        # 各カロリーの取得
-        total_calories = float(cooking_attribute["CookingCalory_Total"].values[0])
-        protein_calories = float(cooking_attribute["CookingCalory_Protein"].values[0])
-        fat_calories = float(cooking_attribute["CookingCalory_Fat"].values[0])
-        carbo_calories = float(cooking_attribute["CookingCalory_Carbo"].values[0])
-
-        if total_calories != 0:
+        if ck.calory_total != 0:
             # PFCバランスの計算
             percentages = {
-                "Protein": (protein_calories / total_calories) * 100,
-                "Fat": (fat_calories / total_calories) * 100,
-                "Carbohydrate": (carbo_calories / total_calories) * 100,
+                "Protein": (ck.caloty_protein / ck.calory_total) * 100,
+                "Fat": (ck.caloty_fat / ck.calory_total) * 100,
+                "Carbohydrate": (ck.grams_carbo / ck.calory_total) * 100,
             }
 
             # ラベルと値のリスト化
@@ -259,12 +247,12 @@ def show_nutrition_info_of_cooking():
             fig = px.pie(
                 values=values,
                 names=labels,
-                title=f"PFCバランス (CookingID: {cooking_id})",
+                title=f"PFCバランス (CookingID: {ck.cooking_id})",
             )
 
             #  円グラフの表示
         st.plotly_chart(fig)
-        st.write(f"Total Calories: {total_calories} kcal")
+        st.write(f"Total Calories: {ck.calory_total} kcal")
     return
 
 
@@ -290,63 +278,10 @@ def show_cookinghistory_registered():
     ].to_html(index=False, justify="left")
     st.markdown(html, unsafe_allow_html=True)
 
-    cooking_details = translator.get_cooking_details()
-
     """
     過去に作った料理ごとのカロリーとPFCバランス等を表示する。
     """
 
     st.subheader("過去に作った料理ごとのカロリーとPFCバランス")
-
-    cooking_details_cookingid = [d.get("CookingID") for d in cooking_details]
-
-    for cooking_id in cooking_details_cookingid:
-        if cooking_id in df_cookinghistory["CookingID"].values:
-            for cooking_details_elem in cooking_details:
-                if cooking_details_elem["CookingID"] == cooking_id:
-                    cooking_attribute = cooking_details_elem["CookingAttribute"]
-                    food_attribute = cooking_details_elem["FoodAttribute"]
-
-                    cooking_name = cooking_attribute["CookingName"].values[0]
-
-                    st.subheader(f"{cooking_id} : {cooking_name}")
-                    st.write(cooking_attribute)
-                    st.table(food_attribute)
-
-                    # 各カロリーの取得
-                    total_calories = float(
-                        cooking_attribute["CookingCalory_Total"].values[0]
-                    )
-                    protein_calories = float(
-                        cooking_attribute["CookingCalory_Protein"].values[0]
-                    )
-                    fat_calories = float(
-                        cooking_attribute["CookingCalory_Fat"].values[0]
-                    )
-                    carbo_calories = float(
-                        cooking_attribute["CookingCalory_Carbo"].values[0]
-                    )
-
-                    if total_calories != 0:
-                        # PFCバランスの計算
-                        percentages = {
-                            "Protein": (protein_calories / total_calories) * 100,
-                            "Fat": (fat_calories / total_calories) * 100,
-                            "Carbohydrate": (carbo_calories / total_calories) * 100,
-                        }
-
-                        # ラベルと値のリスト化
-                        labels = list(percentages.keys())
-                        values = list(percentages.values())
-
-                        # 円グラフの作成
-                        fig = px.pie(
-                            values=values,
-                            names=labels,
-                            title=f"PFCバランス (CookingID: {cooking_id})",
-                        )
-
-                        #  円グラフの表示
-                    st.plotly_chart(fig)
-                    st.write(f"Total Calories: {total_calories} kcal")
+    show_nutrition_info_of_cooking()
     return
