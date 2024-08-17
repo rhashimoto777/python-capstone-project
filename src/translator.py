@@ -82,12 +82,6 @@ def check_possible_to_make_cooking(cooking_id):
 # _______________________________________________________________________
 #                      Set系関数群：何らかDBに値を書き込む操作
 # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
-def add_cooking(df_food_and_grams, df_cooking_attributes):
-    """backend_main.py内の説明を参照"""
-    is_success, msg = backend_op.add_cooking(df_food_and_grams, df_cooking_attributes)
-    return is_success, msg
-
-
 def register_new_cooking(cooking_info: myst.CookingInfo) -> None:
     backend_op.register_new_cooking(cooking_info)
     return

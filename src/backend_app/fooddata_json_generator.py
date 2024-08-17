@@ -4,11 +4,12 @@ import os
 from src.backend_app import backend_common as common
 
 
-def init():
+def generate_json():
     """
     初回起動時の処理。
     FoodDataテーブルの元となるjsonファイルを、./dataフォルダの直下に生成する。
     """
+    common.init()
     _tentative_gen_json()  # TODO：正式な処理に書き換える
     return
 
@@ -178,3 +179,7 @@ def _tentative_gen_json():
     with open(common.FOODDATA_JSON_FILENAME, "w", encoding="utf-8") as file:
         json.dump(d, file, ensure_ascii=False, indent=4, sort_keys=True)
     return
+
+
+if __name__ == "__main__":
+    generate_json()

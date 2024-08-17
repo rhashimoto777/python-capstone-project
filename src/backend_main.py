@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 from src.backend_app import backend_common as common
-from src.backend_app import df_analysis, fooddata, sqlite_db
+from src.backend_app import df_analysis, sqlite_db
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import TableName
 
@@ -19,7 +19,6 @@ class BackEndOperator(Singleton):
     def __init__(self):
         common.system_msg_print("********** Generating Backend Instance ********")
         common.init()
-        fooddata.init()
         self.db_operator = sqlite_db.DataBaseOperator()
         self.raw_df = None
         self.cooking_info_list = None
@@ -27,28 +26,6 @@ class BackEndOperator(Singleton):
 
     # ________________________________________________________________________________________________________________________
     # global関数群
-
-    def add_cooking(self, df_food_and_grams, df_cooking_attributes):
-        """
-        「料理の登録（但し実際に食材を消費して料理を作りはしない）」に相当する操作
-        """
-        # DB上に同じ食材構成のCookingがあるかを判別する。
-        cooking_id = self.__judge_same_cooking_already_exist(df_food_and_grams)
-        if cooking_id is not None:
-            # 既に同じ料理が登録されている状態。
-            # 料理を追加で来ていないのでFalseを返し、加えて理由も返す
-            return False, "same_cooking_already_exist"
-        else:
-            cooking_id = self.__issue_new_id(
-                self.raw_df.df_cooking["CookingID"].tolist()
-            )
-            df_cooking_attributes["CookingID"] = cooking_id
-            self.__push_table_by_append("Cooking", df_cooking_attributes)
-
-            df_food_and_grams["CookingID"] = cooking_id
-            self.__push_table_by_append("CookingFoodData", df_food_and_grams)
-            # 正常に終了したため、Trueと新しいCookingIDを返す。
-            return True, cooking_id
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
         if self.judge_same_cooking_already_exist(cooking_info) is None:
@@ -184,40 +161,3 @@ class BackEndOperator(Singleton):
             else:
                 return i
         return id_max + 1
-
-    def __judge_same_cooking_already_exist(self, df_food_and_grams):
-        """
-        食材のID・量の一覧から、同じ組成のCookingが既に存在しているかを判別する。
-        もし存在している場合、該当するCookingIDを返す。
-        存在していない場合、Noneを返す。
-        """
-        df1 = df_food_and_grams[["FoodDataID", "Grams"]]
-        df1["Grams"] = df1["Grams"].astype(float)
-
-        df_c = self.raw_df.df_cooking
-        cooking_id_list = df_c["CookingID"].tolist()
-        for id in cooking_id_list:
-            df_cfd = self.raw_df.df_cookingfooddata
-            df_c_id = df_cfd[df_cfd["CookingID"] == id]
-            df2 = df_c_id[["FoodDataID", "Grams"]]
-
-            df1_sorted = (
-                df1.sort_index(axis=1)
-                .sort_values(by=df1.columns.tolist())
-                .reset_index(drop=True)
-            )
-            df2_sorted = (
-                df2.sort_index(axis=1)
-                .sort_values(by=df2.columns.tolist())
-                .reset_index(drop=True)
-            )
-            are_equal = df1_sorted.equals(df2_sorted)
-            if are_equal:
-                return id
-        return None
-
-
-# ________________________________________________________________________________________________________________________
-if __name__ == "__main__":
-    # (デバッグ用)
-    backend = BackEndOperator()

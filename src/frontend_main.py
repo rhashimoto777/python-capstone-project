@@ -168,33 +168,6 @@ def resister_cooking():
                 st.error("料理の追加に失敗しました")
         else:
             st.error("同じ材料構成の料理が既に登録されています")
-
-        # dict = []
-        # for food in user_food_select:
-        #     dict.append({"FoodDataID": food["f_id"], "Grams": food["g"]})
-        # df_food_and_grams = pd.DataFrame(dict)
-
-        # dict = []
-        # dict.append(
-        #     {
-        #         "CookingName": c_name,
-        #         "isFavorite": is_favorite,
-        #         "LastUpdateDate": datetime.now(),
-        #         "Description": c_desc,
-        #     }
-        # )
-        # df_cooking_attributes = pd.DataFrame(dict)
-        # is_success, msg = translator.add_cooking(
-        #     df_food_and_grams, df_cooking_attributes
-        # )
-        # if is_success:
-        #     st.success("料理を追加しました")
-        #     st.balloons()
-        # else:
-        #     if msg == "same_cooking_already_exist":
-
-        #     else:
-        #         st.error("料理の追加に失敗しました")
     return
 
 
