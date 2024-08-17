@@ -127,15 +127,17 @@ class DataBaseCreator(DataBaseCommon):
         「cooking_system.dbは実行状態に依存して頻繁に変わるため.gitignoreに登録しているが、一方でGitHub上にデフォルトのDBは登録しておきたい」
         という背景から本関数を用意している。 (主に初回起動時に1回だけcallすることを想定している)
         """
-        src = os.path.join(
-            common.DB_PATH, common.DB_BACKUP_FILENAME
-        )  # コピー元ファイル (=バックアップファイル)
-        dst = os.path.join(common.DB_PATH, common.DB_FILENAME)  # コピー先ファイル
+        # コピー元ファイル (=バックアップファイル)
+        src = os.path.join(common.DB_PATH, common.DB_BACKUP_FILENAME)
+        # コピー先ファイル
+        dst = os.path.join(common.DB_PATH, common.DB_FILENAME)
+
         is_src_file_exist = os.path.exists(src)
         is_dst_file_exist = os.path.exists(dst)
 
         if is_src_file_exist and (not is_dst_file_exist):
-            # バックアップファイルが存在し、かつコピー先ファイルが存在しない場合のみ、バックアップファイルをコピーしてDBファイルを作る
+            # バックアップファイルが存在し、かつコピー先ファイルが存在しない場合のみ、
+            # バックアップファイルをコピーしてDBファイルを作る
             shutil.copy(src, dst)
             common.system_msg_print(
                 f'Restored "{common.DB_FILENAME}" from "{common.DB_BACKUP_FILENAME}"'
@@ -197,8 +199,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # FoodDataテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS FoodData (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.FOODDATA.value} (
                     FoodDataID INTEGER PRIMARY KEY,
                     FoodName TEXT,
                     Calory_Total REAL,
@@ -216,8 +218,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # CookingFoodDataテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS CookingFoodData (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.COOKING_FOOD_DATA.value} (
                     CookingID INTEGER,
                     FoodDataID INTEGER,
                     Grams REAL,
@@ -229,8 +231,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # Cookingテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS Cooking (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.COOKING.value} (
                     CookingID INTEGER PRIMARY KEY,
                     CookingName TEXT,
                     IsFavorite BOOLEAN,
@@ -242,8 +244,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # CookingHistoryテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS CookingHistory (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.COOKING_HISTORY.value} (
                     CookingHistoryID INTEGER PRIMARY KEY,
                     CookingID INTEGER,
                     IssuedDate DATETIME,
@@ -254,8 +256,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # Refrigeratorテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS Refrigerator (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.REFRIGERATOR.value} (
                     FoodDataID INTEGER UNIQUE,
                     Grams REAL,
                     FOREIGN KEY (FoodDataID) REFERENCES FoodData(FoodDataID)
@@ -265,8 +267,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # ShoppingFoodDataテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS ShoppingFoodData (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.SHOPPING_FOOD_DATA.value} (
                     ShoppingHistoryID INTEGER,
                     FoodDataID INTEGER,
                     Grams REAL,
@@ -278,8 +280,8 @@ class DataBaseCreator(DataBaseCommon):
 
             # ShoppingHistoryテーブルの作成
             cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS ShoppingHistory (
+                f"""
+                CREATE TABLE IF NOT EXISTS {TableName.SHOPPING_HISTORY.value} (
                     ShoppingHistoryID INTEGER PRIMARY KEY,
                     IssuedDate DATETIME
                 )
