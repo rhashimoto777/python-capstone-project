@@ -1,7 +1,7 @@
+import pandas as pd
+
 from src import backend_main
 from src.datatype import my_struct
-
-import pandas as pd
 
 # モジュール内のトップレベルのコードは、モジュールの初回import時にしか行われない。
 # translator.pyは様々な.pyファイルからimportされるが、BackEndOperator()のインスタンス生成はシステム全体を通して1回しか実行されない。
@@ -64,6 +64,7 @@ def get_df_shoppinghistory() -> pd.DataFrame:
 # _______________________________________________________________________
 #                      Get系関数群：各種解釈情報の取得
 # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
+
 
 def get_cooking_info_list() -> my_struct.CookingInfoList:
     return backend_op.cooking_info_list

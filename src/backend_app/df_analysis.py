@@ -1,4 +1,7 @@
 from dataclasses import replace
+from typing import Optional, Tuple
+
+import pandas as pd
 
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC
@@ -127,3 +130,79 @@ def __judge_food_present_in_refragerator(
     raw_df: myst.RawDataFrame, food_info: myst.FoodInfoOfCooking
 ) -> bool:
     return True
+
+
+def gen_df_from_cooking_info(
+    raw_df: myst.RawDataFrame, cooking_info: myst.CookingInfo
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    df_c = raw_df.df_cooking
+    cooking_id = __issue_new_id(df_c["CookingID"].tolist())
+
+    dict_cookingfooddata = []
+    for fd in cooking_info.food_attribute:
+        dict_cookingfooddata.append(
+            {
+                "CookingID": cooking_id,
+                "FoodDataID": fd.fooddata_id,
+                "Grams": fd.grams_total,
+            }
+        )
+
+    dict_cooking = []
+    dict_cooking.append(
+        {
+            "CookingID": cooking_id,
+            "CookingName": cooking_info.cooking_name,
+            "isFavorite": cooking_info.is_favorite,
+            "LastUpdateDate": cooking_info.last_update_date,
+            "Description": cooking_info.description,
+        }
+    )
+
+    return pd.DataFrame(dict_cooking), pd.DataFrame(dict_cookingfooddata)
+
+
+def __issue_new_id(existing_id_list: list[int]) -> int:
+    """
+    既存のIDのリストを入力に取り、既存のIDとは被らない新しいIDを発行する。
+    このとき、なるべく小さい値を新しいIDとして発行する。
+    """
+    if len(existing_id_list) == 0:
+        return 0
+    id_max = max(existing_id_list)
+    for i in range(id_max):
+        if i in existing_id_list:
+            continue
+        else:
+            return i
+    return id_max + 1
+
+
+def judge_same_cooking_already_exist(
+    existing_cooking_list: myst.CookingInfoList,
+    new_cooking: myst.CookingInfo,
+) -> Optional[int]:
+    def gen_df_from_foodlist(flist: list[myst.FoodInfoOfCooking]) -> pd.DataFrame:
+        dict = [{"ID": f.fooddata_id, "Grams": f.grams_total} for f in flist]
+        return pd.DataFrame(dict)
+
+    def judge_df_are_equal(df1: pd.DataFrame, df2: pd.DataFrame) -> bool:
+        df1_sorted = (
+            df1.sort_index(axis=1)
+            .sort_values(by=df1.columns.tolist())
+            .reset_index(drop=True)
+        )
+        df2_sorted = (
+            df2.sort_index(axis=1)
+            .sort_values(by=df2.columns.tolist())
+            .reset_index(drop=True)
+        )
+        are_equal = df1_sorted.equals(df2_sorted)
+        return are_equal
+
+    df1 = gen_df_from_foodlist(new_cooking.food_attribute)
+    for eck in existing_cooking_list.cookings:
+        df2 = gen_df_from_foodlist(eck.food_attribute)
+        if judge_df_are_equal(df1, df2):
+            return eck.cooking_id
+    return None
