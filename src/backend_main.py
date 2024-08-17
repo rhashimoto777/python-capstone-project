@@ -28,20 +28,14 @@ class BackEndOperator(Singleton):
     # global関数群
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
-        if self.judge_same_cooking_already_exist(cooking_info) is None:
-            df_c, df_cfd = df_analysis.gen_df_from_cooking_info(
-                self.raw_df, cooking_info
-            )
+        existing = df_analysis.find_same_cooking(self.cooking_info_list, cooking_info)
+        if existing is None:
+            df_c, df_cfd = df_analysis.gen_df_to_register_c(self.raw_df, cooking_info)
             self.__push_table_by_append(TableName.Cooking, df_c)
             self.__push_table_by_append(TableName.CookingFoodData, df_cfd)
         else:
             raise ValueError("既に同じ食材構成の料理が登録されています")
         return
-
-    def judge_same_cooking_already_exist(self, cooking_info: myst.CookingInfo):
-        return df_analysis.judge_same_cooking_already_exist(
-            self.cooking_info_list, cooking_info
-        )
 
     def add_cooking_history(self, cooking_id):
         """

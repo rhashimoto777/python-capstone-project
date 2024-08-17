@@ -97,13 +97,6 @@ def replace_refrigerator(df_refrigerator_new):
 # _______________________________________________________________________
 #                      お役立ち系
 # __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/ __/
-def judge_is_new_cooking(cooking_info: myst.CookingInfo):
-    cooking_id = backend_op.judge_same_cooking_already_exist(cooking_info)
-    if cooking_id is None:
-        return True
-    return False
-
-
 def gen_food_info(food_id: int, grams: float) -> myst.FoodInfoOfCooking:
     try:
         df_f = backend_op.raw_df.df_fooddata

@@ -121,19 +121,28 @@ def __gen_food_info_list_of_cooking(
             grams_carbo=grams_carbo,
             is_present_in_refrigerator=True,
         )
-        judge = __judge_food_present_in_refragerator(raw_df, food_info)
+        judge = __judge_food_exist_in_refragerator(raw_df, food_info)
         food_info = replace(food_info, is_present_in_refrigerator=judge)
         ret.append(food_info)
     return ret
 
 
-def __judge_food_present_in_refragerator(
+def __judge_food_exist_in_refragerator(
     raw_df: myst.RawDataFrame, food_info: myst.FoodInfoOfCooking
 ) -> bool:
-    return True
+    food_id = food_info.fooddata_id
+    c_food_gram = food_info.grams_total
+
+    df_rfrg = raw_df.df_refrigerator
+    df_rfrg_fid = df_rfrg[df_rfrg["FoodDataID"] == food_id]
+    r_food_gram = df_rfrg_fid["Grams"].values[0]
+    if r_food_gram >= c_food_gram:
+        return True
+    else:
+        return False
 
 
-def gen_df_from_cooking_info(
+def gen_df_to_register_c(
     raw_df: myst.RawDataFrame, cooking_info: myst.CookingInfo
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     df_c = raw_df.df_cooking
@@ -179,7 +188,7 @@ def __issue_new_id(existing_id_list: list[int]) -> int:
     return id_max + 1
 
 
-def judge_same_cooking_already_exist(
+def find_same_cooking(
     existing_cooking_list: myst.CookingInfoList,
     new_cooking: myst.CookingInfo,
 ) -> Optional[int]:
