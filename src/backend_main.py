@@ -27,14 +27,6 @@ class BackEndOperator(Singleton):
 
     # ________________________________________________________________________________________________________________________
     # global関数群
-    def get_raw_df(self) -> RawDataFrame:
-        """
-        DataBaseから読み込んだ生のDataFrame情報を返す
-        """
-        # 頻繁に呼ばれる関数であるため、動作が遅くならないようにこの関数内でDBからのpull (__pull_df_from_db) は行わない。
-        # 代わりにDBにpushした直後に確実にpullが行われるようにすることで、DBとの乖離無き事を担保する。
-        # ( そのためには、BackEndOperatorのインスタンスが1つだけである必要がある )
-        return self.raw_df
 
     def get_cooking_details(self):
         """
