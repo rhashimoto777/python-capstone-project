@@ -120,7 +120,7 @@ def __gen_food_info_list_of_cooking(
         judge = __judge_food_present_in_refragerator(raw_df, food_info)
         food_info = replace(food_info, is_present_in_refrigerator=judge)
         ret.append(food_info)
-    return
+    return ret
 
 
 def __judge_food_present_in_refragerator(
