@@ -18,6 +18,7 @@ TN_REFRIGERATOR = "Refrigerator"
 TN_SHOPPING_FOOD_DATA = "ShoppingFoodData"
 TN_SHOPPING_HISTORY = "ShoppingHistory"
 
+
 class DataBaseCommon:
     @contextmanager
     def get_connection_to_db(self):
@@ -55,31 +56,36 @@ class DataBaseOperator(DataBaseCommon):
 
         # DBからDataFrameを読み込む。
         # エラーが起きたときに問題発生個所が分かりやすいよう、直接RawDataFrameに入れずに一回中間変数におく。
+        df_dict = {}
+        table_names = [
+            TN_FOODDATA,
+            TN_COOKING,
+            TN_COOKING_FOOD_DATA,
+            TN_COOKING_HISTORY,
+            TN_REFRIGERATOR,
+            TN_SHOPPING_FOOD_DATA,
+            TN_SHOPPING_HISTORY,
+        ]
         with self.get_connection_to_db() as conn:
-            try:
-                df_food_data = read_table(TN_FOODDATA)
-                df_cooking = read_table(TN_COOKING)
-                df_cookingfooddata = read_table(TN_COOKING_FOOD_DATA)
-                df_cookinghistory = read_table(TN_COOKING_HISTORY)
-                df_refrigerator = read_table(TN_REFRIGERATOR)
-                df_shoppingfooddata = read_table(TN_SHOPPING_FOOD_DATA)
-                df_shoppinghistory = read_table(TN_SHOPPING_HISTORY)
-            except Exception as e:
-                raise Exception(e)
+            for name in table_names:
+                try:
+                    df_dict[name] = read_table(name)
+                except Exception as e:
+                    raise Exception(f"Failed to read table {name}: {e}")
 
         # RawDataFrameデータクラスを生成する。
         try:
             raw_df = RawDataFrame(
-                df_fooddata=df_food_data,
-                df_cooking=df_cooking,
-                df_cookingfooddata=df_cookingfooddata,
-                df_cookinghistory=df_cookinghistory,
-                df_refrigerator=df_refrigerator,
-                df_shoppingfooddata=df_shoppingfooddata,
-                df_shoppinghistory=df_shoppinghistory,
+                df_fooddata=df_dict[TN_FOODDATA],
+                df_cooking=df_dict[TN_COOKING],
+                df_cookingfooddata=df_dict[TN_COOKING_FOOD_DATA],
+                df_cookinghistory=df_dict[TN_COOKING_HISTORY],
+                df_refrigerator=df_dict[TN_REFRIGERATOR],
+                df_shoppingfooddata=df_dict[TN_SHOPPING_FOOD_DATA],
+                df_shoppinghistory=df_dict[TN_SHOPPING_HISTORY],
             )
         except DataValidationError as e:
-            raise DataValidationError(e)
+            raise DataValidationError(f"Data Validation Error: {e}")
         return raw_df
 
     def get_df_from_db(self):
@@ -154,7 +160,6 @@ class DataBaseOperator(DataBaseCommon):
                 f'Restored "{common.DB_FILENAME}" from "{common.DB_BACKUP_FILENAME}"'
             )
         return
-
 
     def __load_fooddata_json(self):
         """
@@ -299,4 +304,3 @@ class DataBaseOperator(DataBaseCommon):
                 )
             """
             )
-        return
