@@ -7,6 +7,16 @@ from contextlib import contextmanager
 import pandas as pd
 
 from src.backend_app import backend_common as common
+from src.datatype.my_struct import DataValidationError, RawDataFrame
+
+# テーブル名を定数定義しておく。TNはTableNameの略
+TN_FOODDATA = "FoodData"
+TN_COOKING_FOOD_DATA = "CookingFoodData"
+TN_COOKING = "Cooking"
+TN_COOKING_HISTORY = "CookingHistory"
+TN_REFRIGERATOR = "Refrigerator"
+TN_SHOPPING_FOOD_DATA = "ShoppingFoodData"
+TN_SHOPPING_HISTORY = "ShoppingHistory"
 
 
 class DataBaseOperator:
@@ -18,7 +28,45 @@ class DataBaseOperator:
 
     # ________________________________________________________________________________________________________________________
     # global関数群
+    def get_raw_df(self) -> RawDataFrame:
+        """
+        DBから生のDataFramwを取得する
+        """
+
+        def read_table(table_name: str) -> pd.DataFrame:
+            query = f"SELECT * FROM {table_name}"
+            return pd.read_sql_query(query, conn)
+
+        with self.__get_connection_to_db() as conn:
+            try:
+                df_food_data = read_table(TN_FOODDATA)
+                df_cooking = read_table(TN_COOKING)
+                df_cookingfooddata = read_table(TN_COOKING_FOOD_DATA)
+                df_cookinghistory = read_table(TN_COOKING_HISTORY)
+                df_refrigerator = read_table(TN_REFRIGERATOR)
+                df_shoppingfooddata = read_table(TN_SHOPPING_FOOD_DATA)
+                df_shoppinghistory = read_table(TN_SHOPPING_HISTORY)
+            except Exception as e:
+                raise Exception(e)
+
+        try:
+            raw_df = RawDataFrame(
+                df_fooddata=df_food_data,
+                df_cooking=df_cooking,
+                df_cookingfooddata=df_cookingfooddata,
+                df_cookinghistory=df_cookinghistory,
+                df_refrigerator=df_refrigerator,
+                df_shoppingfooddata=df_shoppingfooddata,
+                df_shoppinghistory=df_shoppinghistory,
+            )
+        except DataValidationError as e:
+            raise DataValidationError(e)
+        return raw_df
+
     def get_df_from_db(self):
+        """
+        ！！！！！！！！！！！！！！！ 廃棄対象の関数 ！！！！！！！！！！！！！！！！
+        """
         """
         SQLiteDBからDataFrameを取得する。
         DBのtableそれぞれをそのままDataFrameに変換し、辞書型で返す。
