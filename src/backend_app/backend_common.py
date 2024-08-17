@@ -1,9 +1,6 @@
 import os
 from pathlib import Path
 
-# デバッグ表示モード
-IS_DEBUG_PRINT_MODE_IN_BACKEND = True
-
 # バックエンド内で参照するpath・ファイル名
 ROOT_PATH = None
 DB_PATH = None
@@ -23,13 +20,6 @@ def init(user_id="user_default"):
     _gen_root_path()
     _gen_fooddata_json_path_and_name()
     _gen_db_path_and_name(user_id)
-
-
-def debug_print(d, message):
-    if IS_DEBUG_PRINT_MODE_IN_BACKEND:
-        print(f"==============[Back-end] (DEBUG PRINT) {message}==============")
-        print(d)
-    return
 
 
 def system_msg_print(msg):
