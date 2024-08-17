@@ -18,8 +18,23 @@ TN_REFRIGERATOR = "Refrigerator"
 TN_SHOPPING_FOOD_DATA = "ShoppingFoodData"
 TN_SHOPPING_HISTORY = "ShoppingHistory"
 
+class DataBaseCommon:
+    @contextmanager
+    def get_connection_to_db(self):
+        """
+        DBに接続する際には毎回「作業ディレクトリをDB_PATHに変えて」「DB_FILENAMEにconnectして」「conn.close()する」処理が必要だが、
+        それらを呼び出し元で複数回定義すると煩雑だがバグの素となり得る。（どこかで上記のいずれかを忘れたり誤記するかもしれない）
+        そのため、with句を用いてDB接続する際に、同時に上記操作が全て行えるように本関数を定義している。
+        """
+        os.chdir(common.DB_PATH)
+        conn = sqlite3.connect(common.DB_FILENAME)
+        try:
+            yield conn
+        finally:
+            conn.close()
 
-class DataBaseOperator:
+
+class DataBaseOperator(DataBaseCommon):
     def __init__(self) -> None:
         self.__restore_db_file_from_backup()
         self.__create_db()
@@ -33,11 +48,14 @@ class DataBaseOperator:
         DBから生のDataFramwを取得する
         """
 
+        # 関数内の共通関数定義
         def read_table(table_name: str) -> pd.DataFrame:
             query = f"SELECT * FROM {table_name}"
             return pd.read_sql_query(query, conn)
 
-        with self.__get_connection_to_db() as conn:
+        # DBからDataFrameを読み込む。
+        # エラーが起きたときに問題発生個所が分かりやすいよう、直接RawDataFrameに入れずに一回中間変数におく。
+        with self.get_connection_to_db() as conn:
             try:
                 df_food_data = read_table(TN_FOODDATA)
                 df_cooking = read_table(TN_COOKING)
@@ -49,6 +67,7 @@ class DataBaseOperator:
             except Exception as e:
                 raise Exception(e)
 
+        # RawDataFrameデータクラスを生成する。
         try:
             raw_df = RawDataFrame(
                 df_fooddata=df_food_data,
@@ -72,7 +91,7 @@ class DataBaseOperator:
         DBのtableそれぞれをそのままDataFrameに変換し、辞書型で返す。
         """
         df_dict = {}
-        with self.__get_connection_to_db() as conn:
+        with self.get_connection_to_db() as conn:
             tables = [
                 "FoodData",
                 "CookingFoodData",
@@ -95,7 +114,7 @@ class DataBaseOperator:
         DataFrameをDBに書き込む (既存のtableを削除し、新しいtableに置き換える)
         """
         try:
-            with self.__get_connection_to_db() as conn:
+            with self.get_connection_to_db() as conn:
                 df.to_sql(table_name, conn, if_exists="replace", index=False)
         except Exception as e:
             print(f"Error : {e}")
@@ -106,7 +125,7 @@ class DataBaseOperator:
         DataFrameをDBに書き込む (既存のtableは残し、dfの分だけ新しい行を追加する)
         """
         try:
-            with self.__get_connection_to_db() as conn:
+            with self.get_connection_to_db() as conn:
                 df.to_sql(table_name, conn, if_exists="append", index=False)
         except Exception as e:
             print(f"Error : {e}")
@@ -136,19 +155,6 @@ class DataBaseOperator:
             )
         return
 
-    @contextmanager
-    def __get_connection_to_db(self):
-        """
-        DBに接続する際には毎回「作業ディレクトリをDB_PATHに変えて」「DB_FILENAMEにconnectして」「conn.close()する」処理が必要だが、
-        それらを呼び出し元で複数回定義すると煩雑だがバグの素となり得る。（どこかで上記のいずれかを忘れたり誤記するかもしれない）
-        そのため、with句を用いてDB接続する際に、同時に上記操作が全て行えるように本関数を定義している。
-        """
-        os.chdir(common.DB_PATH)
-        conn = sqlite3.connect(common.DB_FILENAME)
-        try:
-            yield conn
-        finally:
-            conn.close()
 
     def __load_fooddata_json(self):
         """
@@ -189,7 +195,7 @@ class DataBaseOperator:
         df = df.drop(columns=["tmp_Calory_PFC"])
 
         # DBのFoodDataテーブルへの書き込み
-        with self.__get_connection_to_db() as conn:
+        with self.get_connection_to_db() as conn:
             df.to_sql("FoodData", conn, if_exists="replace", index=False)
         return
 
@@ -200,7 +206,7 @@ class DataBaseOperator:
         os.makedirs(common.DB_PATH, exist_ok=True)
 
         # データベースを作成または接続
-        with self.__get_connection_to_db() as conn:
+        with self.get_connection_to_db() as conn:
             cursor = conn.cursor()
 
             # FoodDataテーブルの作成
