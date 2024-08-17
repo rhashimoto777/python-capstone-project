@@ -60,7 +60,7 @@ def gen_cooking_info_list(raw_df: myst.RawDataFrame) -> myst.CookingInfoList:
             # 全ての食材が冷蔵庫に必要なグラム数が存在するか
             is_present_in_refrigerator=is_present_in_refrigerator,
         )
-        cookings.append(cooking_id)
+        cookings.append(cooking_info)
 
     ret = myst.CookingInfoList(cookings=cookings)
     return ret
