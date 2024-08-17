@@ -19,7 +19,7 @@ class BackEndOperator(Singleton):
         common.init()
         fooddata.init()
         self.db_operator = sqlite_db.DataBaseOperator()
-        self.df_dict = None
+        self.raw_df = None
         self.__pull_df_from_db()
 
     # ________________________________________________________________________________________________________________________
@@ -31,7 +31,7 @@ class BackEndOperator(Singleton):
         代わりにDBにpushした直後に確実にpullが行われるようにすることで、DBとの乖離無き事を担保する。
         ( そのためには、BackEndOperatorのインスタンスが1つだけである必要がある )
         """
-        return self.df_dict
+        return self.raw_df
 
     def get_cooking_details(self):
         """
@@ -44,9 +44,9 @@ class BackEndOperator(Singleton):
         各DataFrameに何が入っているのかはbreakpoint()等を使って確認してください。
         """
         # DB由来のDataFrameを取得
-        df_c = self.df_dict["Cooking"]
-        df_cf = self.df_dict["CookingFoodData"]
-        df_f = self.df_dict["FoodData"]
+        df_c = self.raw_df.df_cooking
+        df_cf = self.raw_df.df_cookingfooddata
+        df_f = self.raw_df.df_fooddata
 
         cooking_id_list = df_c["CookingID"].tolist()
         ret = []
@@ -134,7 +134,7 @@ class BackEndOperator(Singleton):
             return False, "same_cooking_already_exist"
         else:
             cooking_id = self.__issue_new_id(
-                self.df_dict["Cooking"]["CookingID"].tolist()
+                self.raw_df.df_cooking["CookingID"].tolist()
             )
             df_cooking_attributes["CookingID"] = cooking_id
             self.__push_df_to_db_by_append("Cooking", df_cooking_attributes)
@@ -152,9 +152,9 @@ class BackEndOperator(Singleton):
           第2返り値 : 料理を作ることが可能なとき、料理の材料分を引いた冷蔵庫のDataFrameを返す。
                       (料理を作ることができないときはNoneを返す)
         """
-        df_cf = self.df_dict["CookingFoodData"]
+        df_cf = self.raw_df.df_cookingfooddata
         df_cf = df_cf[df_cf["CookingID"] == cooking_id]
-        df_rfrg = self.df_dict["Refrigerator"]
+        df_rfrg = self.raw_df.df_refrigerator
         df_rfrg_after_cooking = df_rfrg
 
         is_possible_to_make_cooking = True
@@ -191,7 +191,7 @@ class BackEndOperator(Singleton):
         if fg_can_cook:
             # CookingHistoryに料理を追加する
             new_cooking_history_id = self.__issue_new_id(
-                self.df_dict["CookingHistory"]["CookingHistoryID"].tolist()
+                self.raw_df.df_cookinghistory["CookingHistoryID"].tolist()
             )
             dict = []
             dict.append(
@@ -226,7 +226,7 @@ class BackEndOperator(Singleton):
         """
         SQLiteDBをDataFrameに変換し、classのメンバ変数に上書きする。
         """
-        self.df_dict = self.db_operator.get_df_from_db()
+        self.raw_df = self.db_operator.get_raw_df()
         return
 
     def __push_df_to_db_by_append(self, table_name, df):
@@ -271,10 +271,10 @@ class BackEndOperator(Singleton):
         df1 = df_food_and_grams[["FoodDataID", "Grams"]]
         df1["Grams"] = df1["Grams"].astype(float)
 
-        df_c = self.df_dict["Cooking"]
+        df_c = self.raw_df.df_cooking
         cooking_id_list = df_c["CookingID"].tolist()
         for id in cooking_id_list:
-            df_cfd = self.df_dict["CookingFoodData"]
+            df_cfd = self.raw_df.df_cookingfooddata
             df_c_id = df_cfd[df_cfd["CookingID"] == id]
             df2 = df_c_id[["FoodDataID", "Grams"]]
 

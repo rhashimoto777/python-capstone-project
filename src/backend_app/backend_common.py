@@ -8,6 +8,7 @@ DB_FILENAME = None
 DB_BACKUP_FILENAME = None
 FOODDATA_JSON_PATH = None
 FOODDATA_JSON_FILENAME = None
+INIT_FINISH = False
 
 # ________________________________________________________________________________________________________________________
 # global関数
@@ -15,11 +16,17 @@ FOODDATA_JSON_FILENAME = None
 
 def init(user_id="user_default"):
     """
-    初回起動時の処理
+    初回起動時の処理。
+    pytest用に様々な場所から呼ぶため、既に計算している場合はskipする。
     """
-    _gen_root_path()
-    _gen_fooddata_json_path_and_name()
-    _gen_db_path_and_name(user_id)
+    global INIT_FINISH
+    if not INIT_FINISH:
+        _gen_root_path()
+        _gen_fooddata_json_path_and_name()
+        _gen_db_path_and_name(user_id)
+    else:
+        pass
+    return
 
 
 def system_msg_print(msg):

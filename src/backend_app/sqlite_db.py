@@ -19,6 +19,7 @@ TN_SHOPPING_FOOD_DATA = "ShoppingFoodData"
 TN_SHOPPING_HISTORY = "ShoppingHistory"
 
 
+# _________________________________________________________________________________________________________________________
 class DataBaseCommon:
     @contextmanager
     def get_connection_to_db(self):
@@ -35,15 +36,18 @@ class DataBaseCommon:
             conn.close()
 
 
+# _________________________________________________________________________________________________________________________
 class DataBaseOperator(DataBaseCommon):
+    """
+    「DataBaseからの情報の取得」と「DataBaseの更新」を主に行う。
+    「DataBaseの作成/削除」は別クラスに分け、本クラスに合成する。
+    """
+
     def __init__(self) -> None:
-        self.__restore_db_file_from_backup()
-        self.__create_db()
-        self.__load_fooddata_json()
+        common.init() # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
+        self.creator = DataBaseCreator()
         return
 
-    # ________________________________________________________________________________________________________________________
-    # global関数群
     def get_raw_df(self) -> RawDataFrame:
         """
         DBから生のDataFramwを取得する
@@ -137,8 +141,19 @@ class DataBaseOperator(DataBaseCommon):
             print(f"Error : {e}")
         return
 
-    # ________________________________________________________________________________________________________________________
-    # private関数群
+
+# _________________________________________________________________________________________________________________________
+class DataBaseCreator(DataBaseCommon):
+    """
+    「DataBaseの作成/削除」を行うメソッドを集めたクラス。
+    """
+
+    def __init__(self) -> None:
+        common.init() # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
+        self.__restore_db_file_from_backup()
+        self.__create_db()
+        self.__load_fooddata_json()
+
     @staticmethod
     def __restore_db_file_from_backup():
         """
