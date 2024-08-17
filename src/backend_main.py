@@ -4,6 +4,7 @@ import pandas as pd
 
 from src.backend_app import backend_common as common
 from src.backend_app import fooddata, sqlite_db
+from src.datatype.my_enum import TableName
 
 
 class Singleton(object):
@@ -217,7 +218,7 @@ class BackEndOperator(Singleton):
         """
         Refrigeratorテーブルの中身を置き換える。 (ユーザーが直接Refrigeratorの中身を編集するような操作に対応)
         """
-        self.__push_df_to_db_by_replace("Refrigerator", df_refrigerator)
+        self.__push_df_to_db_by_replace(TableName.REFRIGERATOR, df_refrigerator)
         return
 
     # ________________________________________________________________________________________________________________________
@@ -234,16 +235,16 @@ class BackEndOperator(Singleton):
         dfの分だけ新しい行をtableに加える。
         append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
         """
-        self.db_operator.append_dbtable_from_df(table_name, df)
+        self.db_operator.set_table_by_append(table_name, df)
         self.__pull_df_from_db()  # push直後に確実にpullを行う
         return
 
-    def __push_df_to_db_by_replace(self, table_name, df):
+    def __push_df_to_db_by_replace(self, table_name: TableName, df: pd.DataFrame):
         """
         既存のtableを削除し、dfから生成される新しいtableに置き換える。
         append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
         """
-        self.db_operator.replace_table_from_df(table_name, df)
+        self.db_operator.set_table_by_replace(table_name, df)
         self.__pull_df_from_db()  # push直後に確実にpullを行う
         return
 

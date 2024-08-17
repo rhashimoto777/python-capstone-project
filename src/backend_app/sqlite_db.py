@@ -7,16 +7,8 @@ from contextlib import contextmanager
 import pandas as pd
 
 from src.backend_app import backend_common as common
+from src.datatype.my_enum import TableName
 from src.datatype.my_struct import DataValidationError, RawDataFrame
-
-# テーブル名を定数定義しておく。TNはTableNameの略
-TN_FOODDATA = "FoodData"
-TN_COOKING_FOOD_DATA = "CookingFoodData"
-TN_COOKING = "Cooking"
-TN_COOKING_HISTORY = "CookingHistory"
-TN_REFRIGERATOR = "Refrigerator"
-TN_SHOPPING_FOOD_DATA = "ShoppingFoodData"
-TN_SHOPPING_HISTORY = "ShoppingHistory"
 
 
 # _________________________________________________________________________________________________________________________
@@ -44,7 +36,7 @@ class DataBaseOperator(DataBaseCommon):
     """
 
     def __init__(self) -> None:
-        common.init() # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
+        common.init()  # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
         self.creator = DataBaseCreator()
         return
 
@@ -54,21 +46,20 @@ class DataBaseOperator(DataBaseCommon):
         """
 
         # 関数内の共通関数定義
-        def read_table(table_name: str) -> pd.DataFrame:
-            query = f"SELECT * FROM {table_name}"
+        def read_table(table_name: TableName) -> pd.DataFrame:
+            query = f"SELECT * FROM {table_name.value}"
             return pd.read_sql_query(query, conn)
 
         # DBからDataFrameを読み込む。
-        # エラーが起きたときに問題発生個所が分かりやすいよう、直接RawDataFrameに入れずに一回中間変数におく。
         df_dict = {}
         table_names = [
-            TN_FOODDATA,
-            TN_COOKING,
-            TN_COOKING_FOOD_DATA,
-            TN_COOKING_HISTORY,
-            TN_REFRIGERATOR,
-            TN_SHOPPING_FOOD_DATA,
-            TN_SHOPPING_HISTORY,
+            TableName.FOODDATA,
+            TableName.COOKING,
+            TableName.COOKING_FOOD_DATA,
+            TableName.COOKING_HISTORY,
+            TableName.REFRIGERATOR,
+            TableName.SHOPPING_FOOD_DATA,
+            TableName.SHOPPING_HISTORY,
         ]
         with self.get_connection_to_db() as conn:
             for name in table_names:
@@ -80,63 +71,38 @@ class DataBaseOperator(DataBaseCommon):
         # RawDataFrameデータクラスを生成する。
         try:
             raw_df = RawDataFrame(
-                df_fooddata=df_dict[TN_FOODDATA],
-                df_cooking=df_dict[TN_COOKING],
-                df_cookingfooddata=df_dict[TN_COOKING_FOOD_DATA],
-                df_cookinghistory=df_dict[TN_COOKING_HISTORY],
-                df_refrigerator=df_dict[TN_REFRIGERATOR],
-                df_shoppingfooddata=df_dict[TN_SHOPPING_FOOD_DATA],
-                df_shoppinghistory=df_dict[TN_SHOPPING_HISTORY],
+                df_fooddata=df_dict[TableName.FOODDATA],
+                df_cooking=df_dict[TableName.COOKING],
+                df_cookingfooddata=df_dict[TableName.COOKING_FOOD_DATA],
+                df_cookinghistory=df_dict[TableName.COOKING_HISTORY],
+                df_refrigerator=df_dict[TableName.REFRIGERATOR],
+                df_shoppingfooddata=df_dict[TableName.SHOPPING_FOOD_DATA],
+                df_shoppinghistory=df_dict[TableName.SHOPPING_HISTORY],
             )
         except DataValidationError as e:
             raise DataValidationError(f"Data Validation Error: {e}")
         return raw_df
 
-    def get_df_from_db(self):
+    def set_table_by_replace(self, table_name: TableName, df: pd.DataFrame):
         """
-        ！！！！！！！！！！！！！！！ 廃棄対象の関数 ！！！！！！！！！！！！！！！！
-        """
-        """
-        SQLiteDBからDataFrameを取得する。
-        DBのtableそれぞれをそのままDataFrameに変換し、辞書型で返す。
-        """
-        df_dict = {}
-        with self.get_connection_to_db() as conn:
-            tables = [
-                "FoodData",
-                "CookingFoodData",
-                "Cooking",
-                "CookingHistory",
-                "Refrigerator",
-                "ShoppingFoodData",
-                "ShoppingHistory",
-            ]
-
-            # DataFrameに変換
-            for table_name in tables:
-                query = f"SELECT * FROM {table_name}"
-                df = pd.read_sql_query(query, conn)
-                df_dict[table_name] = df
-        return df_dict
-
-    def replace_table_from_df(self, table_name, df):
-        """
-        DataFrameをDBに書き込む (既存のtableを削除し、新しいtableに置き換える)
+        DataFrameをDataBaseのtableに書き込む。
+        このとき、既存のtableを削除し新しいtableに置き換える。
         """
         try:
             with self.get_connection_to_db() as conn:
-                df.to_sql(table_name, conn, if_exists="replace", index=False)
+                df.to_sql(table_name.value, conn, if_exists="replace", index=False)
         except Exception as e:
             print(f"Error : {e}")
         return
 
-    def append_dbtable_from_df(self, table_name, df):
+    def set_table_by_append(self, table_name: TableName, df: pd.DataFrame):
         """
-        DataFrameをDBに書き込む (既存のtableは残し、dfの分だけ新しい行を追加する)
+        DataFrameをDataBaseのtableに書き込む。
+        このとき、既存のtableは残しdfの分だけ新しい行を追加する。
         """
         try:
             with self.get_connection_to_db() as conn:
-                df.to_sql(table_name, conn, if_exists="append", index=False)
+                df.to_sql(table_name.value, conn, if_exists="append", index=False)
         except Exception as e:
             print(f"Error : {e}")
         return
@@ -149,7 +115,7 @@ class DataBaseCreator(DataBaseCommon):
     """
 
     def __init__(self) -> None:
-        common.init() # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
+        common.init()  # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
         self.__restore_db_file_from_backup()
         self.__create_db()
         self.__load_fooddata_json()
