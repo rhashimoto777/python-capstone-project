@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src import translator
-from src.datatype import my_struct as myst
 
 user_food_select = None
 
@@ -263,12 +262,16 @@ def show_nutrition_info_of_cooking():
         col1, col2 = st.columns(2)
         with col1:
             st.dataframe(cooking_attribute)
-            button1 = st.button("使用する食材と量", key=f"show_nutrition_info_of_cooking_button1_{i}")
+            button1 = st.button(
+                "使用する食材と量", key=f"show_nutrition_info_of_cooking_button1_{i}"
+            )
             if button1:
                 st.dataframe(food_quantity)
 
             # with st.expander("食材ごとのカロリー", expanded=False):
-            button2 = st.button("食材ごとのカロリー", key=f"show_nutrition_info_of_cooking_button2_{i}")
+            button2 = st.button(
+                "食材ごとのカロリー", key=f"show_nutrition_info_of_cooking_button2_{i}"
+            )
             if button2:
                 st.caption("単位は[kcal]")
                 st.dataframe(food_calory)
