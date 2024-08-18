@@ -193,7 +193,7 @@ class DataBaseCreator(DataBaseCommon):
         """
         if self.is_db_bk_exist and (not self.is_db_exist):
             shutil.copy(src=self.db_bk_path, dst=self.db_path)
-            common.system_msg_print(
+            util.backend_system_msg(
                 f'Restored "{common.DB_FILENAME}" from "{common.DB_BACKUP_FILENAME}"'
             )
         return
@@ -239,7 +239,7 @@ class DataBaseCreator(DataBaseCommon):
                 f"「食材の総カロリー({total_calory:.1f})」を超えています。"
                 f"値の整合のため、「総カロリー」を{pfc_calory:.1f}に置き換えます。"
             )
-            common.system_msg_print(msg)
+            util.backend_system_msg(msg)
         df.loc[mask, "Calory_Total"] = df.loc[mask, "tmp_Calory_PFC"]
         df = df.drop(columns=["tmp_Calory_PFC"])
 

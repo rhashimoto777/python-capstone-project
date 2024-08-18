@@ -33,14 +33,6 @@ def init(user_id="user_default"):
     return
 
 
-def system_msg_print(msg):
-    """
-    Backend側で用いるシステムメッセージ表示用のprint関数
-    """
-    print(f"[backend : system-message] {msg}")
-    return
-
-
 # ________________________________________________________________________________________________________________________
 # private関数
 

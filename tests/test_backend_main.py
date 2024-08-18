@@ -130,12 +130,14 @@ def test_register_cooking(backend_operator):
     # 加えて関数実行前のcooking_idのリストを取得しておく
     cooking_info: myst.CookingInfo = test_my_struct.gen_valid_cooking_info_instance()
     existing_id_list = backend_operator.raw_df.df_cooking["CookingID"].tolist()
-    
+
     # テストに用いたCookingInfoは、既存の料理と被っているのかを判別する。
     # もしテストに用いたCookinfInfoが既存の料理と被っている場合、後のテストで正常に試験が行えないためFailにする。
     existing_id = None
     try:
-        existing_id = anly.find_same_cooking(backend_operator.cooking_info_list, cooking_info)
+        existing_id = anly.find_same_cooking(
+            backend_operator.cooking_info_list, cooking_info
+        )
     except Exception as e:
         pytest.fail(f"pytest failed : {e}")
 
@@ -148,18 +150,17 @@ def test_register_cooking(backend_operator):
     except Exception as e:
         pytest.fail(f"pytest failed : {e}")
 
-
     # 新しいcooking_idが生成されたことを確認する。
     assert cooking_id is not None
     assert cooking_id not in existing_id_list
 
 
-# def test_add_cooking_history(backend_operator):
-#     # 料理履歴を追加するメソッドのテスト
-#     pass
-#     # cooking_id = 1  # 既存のCookingIDを使用
-#     # backend_operator.add_cooking_history(cooking_id)
-#     # 追加された履歴を検証するためのアサーションを追加
+def test_add_cooking_history(backend_operator):
+    # 料理履歴を追加するメソッドのテスト
+    pass
+    # cooking_id = 1  # 既存のCookingIDを使用
+    # backend_operator.add_cooking_history(cooking_id)
+    # 追加された履歴を検証するためのアサーションを追加
 
 
 # def test_replace_refrigerator(backend_operator):
