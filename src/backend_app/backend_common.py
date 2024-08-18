@@ -75,7 +75,7 @@ def _gen_db_path_and_name(user_id):
     global DB_PATH
     global DB_FILENAME
     global DB_BACKUP_FILENAME
-    DB_PATH = os.path.join(ROOT_PATH, "data", 'users', user_id)
+    DB_PATH = os.path.join(ROOT_PATH, "data", "users", user_id)
     DB_FILENAME = "cooking_system.db"
     DB_BACKUP_FILENAME = "cooking_system_backup.db"
     return
@@ -105,4 +105,3 @@ if __name__ == "__main__":
     print(f"FOODDATA_JSON_FILENAME = {FOODDATA_JSON_FILENAME}")
     print(f"USER_ID                = {USER_ID}")
     print(f"INIT_FINISH            = {INIT_FINISH}")
-

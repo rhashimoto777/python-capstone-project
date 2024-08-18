@@ -1,5 +1,7 @@
-from src.backend_app import backend_common as common
 import pytest
+
+from src.backend_app import backend_common as common
+
 
 @pytest.fixture(autouse=True)
 def setup_and_teardown():
@@ -59,6 +61,7 @@ def all_global_are_not_initial():
     assert common.INIT_FINISH is True
     return
 
+
 def return_to_initial():
     """
     全てのグローバル変数を初期値に戻す（テスト用の関数）
@@ -73,6 +76,7 @@ def return_to_initial():
     common.INIT_FINISH = False
     return
 
+
 def test_init_01():
     """
     init関数をテストする。引数を空にする。
@@ -80,6 +84,7 @@ def test_init_01():
     common.init()
     all_global_are_not_initial()
     assert common.USER_ID == "user_default"
+
 
 def test_init_02():
     """
@@ -89,6 +94,7 @@ def test_init_02():
     common.init(user_id)
     all_global_are_not_initial()
     assert common.USER_ID == user_id
+
 
 def test_init_03():
     """
