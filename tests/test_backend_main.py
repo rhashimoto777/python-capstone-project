@@ -8,19 +8,49 @@ from tests import test_my_struct
 from src.datatype.my_enum import TableName
 
 
-@pytest.fixture
-def backend_operator() -> BackEndOperator:
+@pytest.fixture(autouse=True)
+def setup_and_teardown():
     """
-    テスト用のBackEndOperatorインスタンスを作成する。
+    テストの実行前後でDataBase値が変わらないようにする。
     """
-    return BackEndOperator()
+
+    # テスト用のBackEndOperatorインスタンスを作成する
+    beo = BackEndOperator()
+
+    # DataFrameのバックアップ
+    orig = beo.raw_df
+
+    # テスト実行
+    yield beo
+
+    # テスト後に元の値に戻す
+    beo.push_table_by_replace(TableName.FoodData, orig.df_fooddata)
+    beo.push_table_by_replace(TableName.CookingFoodData, orig.df_cookingfooddata)
+    beo.push_table_by_replace(TableName.Cooking, orig.df_cooking)
+    beo.push_table_by_replace(TableName.CookingHistory, orig.df_cookinghistory)
+    beo.push_table_by_replace(TableName.Refrigerator, orig.df_refrigerator)
+    beo.push_table_by_replace(TableName.ShoppingFoodData, orig.df_shoppingfooddata)
+    beo.push_table_by_replace(TableName.ShoppingHistory, orig.df_shoppinghistory)
+
+    # 念のため、本当に復元された確認
+    restored = beo.raw_df
+    assert orig.df_fooddata.equals(restored.df_fooddata)
+    assert orig.df_cookingfooddata.equals(restored.df_cookingfooddata)
+    assert orig.df_cooking.equals(restored.df_cooking)
+    assert orig.df_cookinghistory.equals(restored.df_cookinghistory)
+    assert orig.df_refrigerator.equals(restored.df_refrigerator)
+    assert orig.df_shoppingfooddata.equals(restored.df_shoppingfooddata)
+    assert orig.df_shoppinghistory.equals(restored.df_shoppinghistory)
+    return
 
 
-def test_raw_df(backend_operator):
+def test_raw_df(setup_and_teardown):
     """
     BackEndOperatorのインスタンス生成時と同時に、raw_dfが正常に生成されるかを確認する。
     (__init__メソッド、__pull_dataメソッドのテストも兼ねる)
     """
+    backend_operator = setup_and_teardown
+
     # DBからDataFrameを取得できているかを確認する。
     raw_df = backend_operator.raw_df
     assert isinstance(raw_df, myst.RawDataFrame)
@@ -109,11 +139,13 @@ def test_raw_df(backend_operator):
     return
 
 
-def test_cooking_info_list(backend_operator):
+def test_cooking_info_list(setup_and_teardown):
     """
     BackEndOperatorのインスタンス生成時と同時に、raw_dfが正常に生成されるかを確認する。
     (__init__メソッド、__pull_dataメソッドのテストも兼ねる)
     """
+    backend_operator = setup_and_teardown
+
     # DBからDataFrameを取得できているかを確認する。
     cilist = backend_operator.cooking_info_list
     assert isinstance(cilist, myst.CookingInfoList)
@@ -125,14 +157,17 @@ def test_cooking_info_list(backend_operator):
     return
 
 
-def test_register_cooking(backend_operator):
+def test_register_cooking(setup_and_teardown):
     """
     registor_cooking関数のテスト
     """
+    backend_operator = setup_and_teardown
+    df_c_orig = backend_operator.raw_df.df_cooking
+
     # 有効かつ空ではないなCookingInfoインスタンスを生成する。
     # 加えて関数実行前のcooking_idのリストを取得しておく
     cooking_info: myst.CookingInfo = test_my_struct.gen_valid_cooking_info_instance()
-    existing_id_list = backend_operator.raw_df.df_cooking["CookingID"].tolist()
+    existing_id_list = df_c_orig["CookingID"].tolist()
 
     # テストに用いたCookingInfoは、既存の料理と被っているのかを判別する。
     # もしテストに用いたCookinfInfoが既存の料理と被っている場合、後のテストで正常に試験が行えないためFailにする。
@@ -156,41 +191,72 @@ def test_register_cooking(backend_operator):
     # 新しいcooking_idが生成されたことを確認する。
     assert cooking_id is not None
     assert cooking_id not in existing_id_list
+
     return
 
 
-def test_add_cooking_history(backend_operator):
+def test_add_cooking_history_01(setup_and_teardown):
     """
-    add_cooking_history関数のテスト
+    add_cooking_history関数のテスト。
+    この関数では「料理が作れた」時の挙動を扱う。
     """
-    # 引数として用いるCookingIDを用意する。
-    # 登録済みの料理がゼロの場合はテストが実行できないため、assertで落とす。
-    cooking_id_list = backend_operator.raw_df.df_cooking["CookingID"].to_list()
-    assert len(cooking_id_list) > 0
-    cooking_id = cooking_id_list[0]
-
-    # 元のDataFrameの値を記憶しておく。
+    backend_operator = setup_and_teardown
     df_ch_orig = backend_operator.raw_df.df_cookinghistory
     df_r_orig = backend_operator.raw_df.df_refrigerator
+    df_c_orig = backend_operator.raw_df.df_cooking
 
-    # 関数を実行する
+    # 既存のCookingHistoryに確実に存在しないCookingIDを用意するため、新しい料理を登録する。
+    # 新しい料理が登録できなかった場合はテストが実行できないため、テスト条件の不良としてassertで落とす。
+    cooking_info: myst.CookingInfo = test_my_struct.gen_valid_cooking_info_instance()
+    cooking_id = backend_operator.register_new_cooking(cooking_info)
+    assert cooking_id is not None
+    assert cooking_id not in df_c_orig["CookingID"].tolist()
+    assert cooking_id not in df_ch_orig["CookingID"].tolist()
+    del df_c_orig
+
+    # 関数を実行する。実際に料理が作れなかった場合は後のテストが無意味になるため、assertで落とす。
     try:
-        backend_operator.add_cooking_history(cooking_id)
+        ret = backend_operator.add_cooking_history(cooking_id)
     except Exception as e:
         pytest.fail(f"pytest failed : {e}")
+    assert ret
 
-    # DataFrameを元の値に戻す
-    backend_operator.push_table_by_replace(TableName.CookingHistory, df_ch_orig)
-    backend_operator.push_table_by_replace(TableName.Refrigerator, df_r_orig)
+    # CookingHistoryテーブルに値が追加されているかチェックする
+    df_ch_after = backend_operator.raw_df.df_cookinghistory
+    assert not df_ch_orig.equals(df_ch_after)
+    assert len(df_ch_orig) + 1 == len(df_ch_after)
+    assert df_ch_after.iloc[-1].loc["CookingID"] == cooking_id
+
+    # Refrigeratorテーブルから値が引かれているかを確認する
+    def get_grams(df_r, food_id):
+        return df_r[df_r["FoodDataID"] == food_id]["Grams"].values[0]
+
+    df_r_after = backend_operator.raw_df.df_refrigerator
+    cooking_info = None
+    for c in backend_operator.cooking_info_list.cookings:
+        if c.cooking_id == cooking_id:
+            cooking_info = c
+            break
+    assert cooking_info is not None
+    assert len(cooking_info.food_attribute) > 0
+    for food_info in cooking_info.food_attribute:
+        food_id = food_info.fooddata_id
+        g_orig = get_grams(df_r_orig, food_id)
+        g_after = get_grams(df_r_after, food_id)
+
+        food_grams = food_info.grams_total
+        assert food_grams > 0
+        assert g_orig - food_grams == g_after
     return
 
 
-def test_push_table_by_replace(backend_operator):
+def test_push_table_by_replace(setup_and_teardown):
     """
     push_table_by_replace関数のテスト。
     Refrigeratorテーブルを用いる。
     """
-
+    backend_operator = setup_and_teardown
+    
     def get_latest_df_refrigerator():
         return backend_operator.raw_df.df_refrigerator
 
@@ -212,12 +278,4 @@ def test_push_table_by_replace(backend_operator):
     # 値が書き換わったかチェック
     df_r_result = get_latest_df_refrigerator()
     assert df_r_result.equals(df_r_tmp)
-
-    # 元々の値に戻す
-    del df_r_result, df_r_tmp  # ポカ避け
-    replace_refrigerator(df_r_orig)
-
-    # 本当に戻っているのかチェック
-    df_r_restored = get_latest_df_refrigerator()
-    assert df_r_restored.equals(df_r_orig)
     return
