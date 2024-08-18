@@ -2,7 +2,7 @@ import pandas as pd
 
 from src import util
 from src.backend_app import backend_common_info as common
-from src.backend_app import df_analysis as anly
+from src.backend_app import data_analysis as anly
 from src.backend_app import sqlite_db
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import TableName

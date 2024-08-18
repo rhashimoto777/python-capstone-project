@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from src import translator
-from src.backend_app import df_analysis as anly
+from src.backend_app import data_analysis as anly
 from src.backend_main import BackEndOperator
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import TableName
