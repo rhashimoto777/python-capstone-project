@@ -6,9 +6,10 @@ from src import backend_main
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
 from src.util import g_to_kcal
+from src.backend_app import data_analysis as anly
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
-backend_op = None # BackEndOperatorのインスタンスで上書きする。
+backend_op = None  # BackEndOperatorのインスタンスで上書きする。
 INIT_FINISH = False
 
 
@@ -79,6 +80,13 @@ def get_df_shoppinghistory() -> pd.DataFrame:
 
 def get_cooking_info_list() -> myst.CookingInfoList:
     return backend_op.cooking_info_list
+
+
+def judge_is_new_cooking(cooking_info: myst.CookingInfo) -> bool:
+    cooking_id = anly.find_same_cooking(
+        existing_cooking_list=backend_op.cooking_info_list, new_cooking=cooking_info
+    )
+    return cooking_id is None
 
 
 # _______________________________________________________________________

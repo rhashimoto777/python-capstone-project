@@ -24,7 +24,9 @@ def init(user_id="user_default"):
     """
     global INIT_FINISH
     if not INIT_FINISH:
-        util.backend_system_msg(f"********** common_info init (user_id = {user_id}) **********")
+        util.backend_system_msg(
+            f"********** common_info init (user_id = {user_id}) **********"
+        )
         _memorize_user_id(user_id)
         _gen_root_path()
         _gen_fooddata_json_path_and_name()

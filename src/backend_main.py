@@ -32,7 +32,9 @@ class Singleton(object):
 # ________________________________________________________________________________________________________________________
 class BackEndOperator(Singleton):
     def __init__(self, user_id="user_default"):
-        util.backend_system_msg(f"********** Generating Backend Instance (used_id = {user_id}) ********")
+        util.backend_system_msg(
+            f"********** Generating Backend Instance (used_id = {user_id}) ********"
+        )
         common.init(user_id)
         self.db_operator = sqlite_db.DataBaseOperator()
         self.raw_df = None
