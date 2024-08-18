@@ -1,14 +1,33 @@
 from src.backend_app import backend_common as common
+import pytest
 
-ROOT_PATH = None
-DB_PATH = None
-DB_FILENAME = None
-DB_BACKUP_FILENAME = None
-FOODDATA_JSON_PATH = None
-FOODDATA_JSON_FILENAME = None
+@pytest.fixture(autouse=True)
+def setup_and_teardown():
+    # グローバル変数のバックアップ
+    ROOT_PATH = common.ROOT_PATH
+    DB_PATH = common.DB_PATH
+    DB_FILENAME = common.DB_FILENAME
+    DB_BACKUP_FILENAME = common.DB_BACKUP_FILENAME
+    FOODDATA_JSON_PATH = common.FOODDATA_JSON_PATH
+    FOODDATA_JSON_FILENAME = common.FOODDATA_JSON_FILENAME
+    USER_ID = common.USER_ID
+    INIT_FINISH = common.INIT_FINISH
 
-USER_ID = None
-INIT_FINISH = False
+    # テスト前の初期化
+    return_to_initial()
+    all_global_are_initial()
+
+    yield
+
+    # テスト後に元の値に戻す
+    common.ROOT_PATH = ROOT_PATH
+    common.DB_PATH = DB_PATH
+    common.DB_FILENAME = DB_FILENAME
+    common.DB_BACKUP_FILENAME = DB_BACKUP_FILENAME
+    common.FOODDATA_JSON_PATH = FOODDATA_JSON_PATH
+    common.FOODDATA_JSON_FILENAME = FOODDATA_JSON_FILENAME
+    common.USER_ID = USER_ID
+    common.INIT_FINISH = INIT_FINISH
 
 
 def all_global_are_initial():
@@ -40,7 +59,6 @@ def all_global_are_not_initial():
     assert common.INIT_FINISH is True
     return
 
-
 def return_to_initial():
     """
     全てのグローバル変数を初期値に戻す（テスト用の関数）
@@ -55,92 +73,31 @@ def return_to_initial():
     common.INIT_FINISH = False
     return
 
-
-def backup_current_global():
+def test_init_01():
     """
-    commonのグローバル変数に元々入っていた値をバックアップする
+    init関数をテストする。引数を空にする。
     """
-    global ROOT_PATH
-    global DB_PATH
-    global DB_FILENAME
-    global DB_BACKUP_FILENAME
-    global FOODDATA_JSON_PATH
-    global FOODDATA_JSON_FILENAME
-    global USER_ID
-    global INIT_FINISH
+    common.init()
+    all_global_are_not_initial()
+    assert common.USER_ID == "user_default"
 
-    ROOT_PATH = common.ROOT_PATH
-    DB_PATH = common.DB_PATH
-    DB_FILENAME = common.DB_FILENAME
-    DB_BACKUP_FILENAME = common.DB_BACKUP_FILENAME
-    FOODDATA_JSON_PATH = common.FOODDATA_JSON_PATH
-    FOODDATA_JSON_FILENAME = common.FOODDATA_JSON_FILENAME
-    USER_ID = common.USER_ID
-    INIT_FINISH = common.INIT_FINISH
-    return
-
-
-def restore_global_from_backup():
+def test_init_02():
     """
-    バックアップしていた値から、commonのグローバル変数に元々入っていた値を書き込む
+    init関数をテストする。引数(user_id)を何らか空ではなく、かつスペースを含まない値にする。
     """
-    common.ROOT_PATH = ROOT_PATH
-    common.DB_PATH = DB_PATH
-    common.DB_FILENAME = DB_FILENAME
-    common.DB_BACKUP_FILENAME = DB_BACKUP_FILENAME
-    common.FOODDATA_JSON_PATH = FOODDATA_JSON_PATH
-    common.FOODDATA_JSON_FILENAME = FOODDATA_JSON_FILENAME
-    common.USER_ID = USER_ID
-    common.INIT_FINISH = INIT_FINISH
-    return
+    user_id = "this_user_is_test"
+    common.init(user_id)
+    all_global_are_not_initial()
+    assert common.USER_ID == user_id
 
-
-def test_init():
+def test_init_03():
     """
-    init関数をテストする。
+    init関数をテストする。引数(user_id)を何らか空ではなく、かつスペースを含む値にする。
     """
+    user_id = "this user is test"
+    common.init(user_id)
+    all_global_are_not_initial()
 
-    def test_0():
-        """
-        引数を空にする。
-        """
-        common.init()
-        all_global_are_not_initial()
-        assert common.USER_ID == "user_default"
-
-    def test_1():
-        """
-        引数(user_id)を何らか空ではなく、かつスペースを含まない値にする。
-        """
-        user_id = "this_user_is_test"
-        common.init(user_id)
-        all_global_are_not_initial()
-        assert common.USER_ID == user_id
-
-    def test_2():
-        """
-        引数(user_id)を何らか空ではなく、かつスペースを含む値にする。
-        """
-        user_id = "this user is test"
-        common.init(user_id)
-        all_global_are_not_initial()
-
-        user_id_expect = "this_user_is_test"
-        assert common.USER_ID != user_id
-        assert common.USER_ID == user_id_expect
-
-    for i in range(3):
-        backup_current_global()
-        return_to_initial()
-        all_global_are_initial()
-        if i == 0:
-            test_0()
-        elif i == 1:
-            test_1()
-        elif i == 2:
-            test_2()
-        else:
-            pass
-
-        restore_global_from_backup()
-    return
+    user_id_expect = "this_user_is_test"
+    assert common.USER_ID != user_id
+    assert common.USER_ID == user_id_expect

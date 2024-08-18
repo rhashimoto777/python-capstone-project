@@ -23,10 +23,10 @@ def init(user_id="user_default"):
     """
     global INIT_FINISH
     if not INIT_FINISH:
+        _memorize_user_id(user_id)
         _gen_root_path()
         _gen_fooddata_json_path_and_name()
         _gen_db_path_and_name(user_id)
-        _memorize_user_id(user_id)
         INIT_FINISH = True
     else:
         pass
@@ -87,8 +87,8 @@ def _memorize_user_id(user_id):
     """
     global USER_ID
     # 念のためスペースをユーザーIDに変換する
-    user_id.replace(" ", "_")
-    USER_ID = user_id
+    user_id = str(user_id)
+    USER_ID = user_id.replace(" ", "_")
     return
 
 
