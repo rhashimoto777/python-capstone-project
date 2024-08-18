@@ -1,7 +1,7 @@
 import json
 import os
 
-from src.backend_app import backend_common as common
+from src.backend_app import backend_common_info as common
 
 
 def generate_json():

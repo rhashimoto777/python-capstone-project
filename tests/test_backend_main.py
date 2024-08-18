@@ -105,6 +105,7 @@ def test_raw_df(backend_operator):
             "IssuedDate",
         ],
     )
+    return
 
 
 def test_cooking_info_list(backend_operator):
@@ -120,6 +121,7 @@ def test_cooking_info_list(backend_operator):
     # ここでは、何らか空ではない値が入っていることを確認する。
     # (前提として、DBに登録されているファイルには1つ以上の料理が登録されているとする)
     assert len(cilist.cookings) > 0
+    return
 
 
 def test_register_cooking(backend_operator):
@@ -153,6 +155,7 @@ def test_register_cooking(backend_operator):
     # 新しいcooking_idが生成されたことを確認する。
     assert cooking_id is not None
     assert cooking_id not in existing_id_list
+    return
 
 
 def test_add_cooking_history(backend_operator):
