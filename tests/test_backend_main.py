@@ -127,30 +127,31 @@ def test_register_cooking(backend_operator):
     registor_cookingメソッドのテスト
     """
     # 有効かつ空ではないなCookingInfoインスタンスを生成する。
+    # 加えて関数実行前のcooking_idのリストを取得しておく
     cooking_info: myst.CookingInfo = test_my_struct.gen_valid_cooking_info_instance()
-
-    # 関数実行前のcooking_idのリストを取得しておく
     existing_id_list = backend_operator.raw_df.df_cooking["CookingID"].tolist()
+    
+    # テストに用いたCookingInfoは、既存の料理と被っているのかを判別する。
+    # もしテストに用いたCookinfInfoが既存の料理と被っている場合、後のテストで正常に試験が行えないためFailにする。
+    existing_id = None
+    try:
+        existing_id = anly.find_same_cooking(backend_operator.cooking_info_list, cooking_info)
+    except Exception as e:
+        pytest.fail(f"pytest failed : {e}")
 
-    # # 正常に処理実行できるかを判定する。
-    # try:
-    #     cooking_id = backend_operator.register_new_cooking(cooking_info)
-    # except Exception as e:
-    #     pytest.fail(f"pytest failed : {e}")
+    assert existing_id is None
 
-    # # テストに用いたCookingInfoは、既存の料理と被っているのかを判別する。
-    # existing_id = None
-    # try:
-    #     existing_id = anly.find_same_cooking(backend_operator.cooking_info_list, cooking_info)
-    # except Exception as e:
-    #     pytest.fail(f"pytest failed : {e}")
+    # 対象関数を実行する。
+    # 同時に、正常に処理実行できるかを判定する。
+    try:
+        cooking_id = backend_operator.register_new_cooking(cooking_info)
+    except Exception as e:
+        pytest.fail(f"pytest failed : {e}")
 
-    # # もしテストに用いたCookinfInfoが既存の料理と被っている場合、後のテストで正常に試験が行えないためFailにする。
-    # assert existing_id is None
 
-    # # 既存の料理と被らないとき、新しいcooking_idが生成されたことを確認する。
-    # assert cooking_id is not None
-    # assert cooking_id not in existing_id_list
+    # 新しいcooking_idが生成されたことを確認する。
+    assert cooking_id is not None
+    assert cooking_id not in existing_id_list
 
 
 # def test_add_cooking_history(backend_operator):
