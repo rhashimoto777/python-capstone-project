@@ -45,8 +45,8 @@ class BackEndOperator(Singleton):
         existing = anly.find_same_cooking(self.cooking_info_list, cooking_info)
         if existing is None:
             df_c, df_cfd, cid = anly.gen_df_to_register_c(self.raw_df, cooking_info)
-            self.__push_table_by_append(TableName.Cooking, df_c)
-            self.__push_table_by_append(TableName.CookingFoodData, df_cfd)
+            self.push_table_by_append(TableName.Cooking, df_c)
+            self.push_table_by_append(TableName.CookingFoodData, df_cfd)
         else:
             raise ValueError("既に同じ食材構成の料理が登録されています")
         return cid
@@ -64,17 +64,28 @@ class BackEndOperator(Singleton):
         )
 
         if fg_can_cook:
-            self.__push_table_by_append(TableName.CookingHistory, df_cookinghistory)
-            self.replace_refrigerator(df_rf_after_cooking)
+            self.push_table_by_append(TableName.CookingHistory, df_cookinghistory)
+            self.push_table_by_replace(TableName.Refrigerator, df_rf_after_cooking)
             return True
         else:
             return False
 
-    def replace_refrigerator(self, df_refrigerator):
+    def push_table_by_append(self, table_name, df):
         """
-        Refrigeratorテーブルの中身を置き換える。 (ユーザーが直接Refrigeratorの中身を編集するような操作に対応)
+        dfの分だけ新しい行をtableに加える。
+        append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
         """
-        self.__push_table_by_replace(TableName.Refrigerator, df_refrigerator)
+        self.db_operator.set_table_by_append(table_name, df)
+        self.__pull_data()  # push直後に確実にpullを行う
+        return
+
+    def push_table_by_replace(self, table_name: TableName, df: pd.DataFrame):
+        """
+        既存のtableを削除し、dfから生成される新しいtableに置き換える。
+        append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
+        """
+        self.db_operator.set_table_by_replace(table_name, df)
+        self.__pull_data()  # push直後に確実にpullを行う
         return
 
     # ********************* private関数群 *********************
@@ -84,22 +95,4 @@ class BackEndOperator(Singleton):
         """
         self.raw_df = self.db_operator.get_raw_df()
         self.cooking_info_list = anly.gen_cooking_info_list(self.raw_df)
-        return
-
-    def __push_table_by_append(self, table_name, df):
-        """
-        dfの分だけ新しい行をtableに加える。
-        append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
-        """
-        self.db_operator.set_table_by_append(table_name, df)
-        self.__pull_data()  # push直後に確実にpullを行う
-        return
-
-    def __push_table_by_replace(self, table_name: TableName, df: pd.DataFrame):
-        """
-        既存のtableを削除し、dfから生成される新しいtableに置き換える。
-        append_dbtable_from_dfを直接呼ばずにこの関数を設けているのは、DBを更新した直後に確実にpullするようにするため。
-        """
-        self.db_operator.set_table_by_replace(table_name, df)
-        self.__pull_data()  # push直後に確実にpullを行う
         return

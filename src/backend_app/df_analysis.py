@@ -177,16 +177,23 @@ def gen_df_to_register_c(
 def __issue_new_id(existing_id_list: list[int]) -> int:
     """
     既存のIDのリストを入力に取り、既存のIDとは被らない新しいIDを発行する。
-    このとき、なるべく小さい値を新しいIDとして発行する。
     """
     if len(existing_id_list) == 0:
         return 0
     id_max = max(existing_id_list)
-    for i in range(id_max):
-        if i in existing_id_list:
-            continue
-        else:
-            return i
+
+    # 以下は「既存のIDと被らない数のうちなるべく小さい値をIDとする」ためのコード。
+    # 要素を削除した後に新規要素が追加されたとき、小さい値のIDを使いまわすことは利点欠点両方ある。
+    # 例えば料理ナンバーをユーザーに表示するときに、ナンバーとしてIDをそのまま使う場合、
+    # 新しい料理のナンバーが小さい値なのは明らかに不自然である。（欠番より不自然）
+    # またナンバーは料理ごとに不変とした方がユーザーとして使いやすい可能性がある。
+    # そのため、一旦「小さい値を使いまわさない」方針とし、コメントアウトする。
+
+    # for i in range(id_max):
+    #     if i in existing_id_list:
+    #         continue
+    #     else:
+    #         return i
     return id_max + 1
 
 
@@ -228,7 +235,9 @@ def gen_df_to_add_cooking_history(
         raise ValueError(f"存在しないcooking_id{cooking_id}が入力されました")
 
     # 冷蔵庫内に必要な材料が十分なグラム数あるかを確認する。
-    fg_can_cook, df_rf_after_cooking = check_possible_to_make_cooking(cooking_info)
+    fg_can_cook, df_rf_after_cooking = check_possible_to_make_cooking(
+        raw_df, cooking_info
+    )
 
     if fg_can_cook:
         h_id = __issue_new_id(raw_df.df_cookinghistory["CookingHistoryID"].tolist())

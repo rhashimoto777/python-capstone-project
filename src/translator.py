@@ -6,6 +6,7 @@ from src import backend_main
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC
 from src.util import g_to_kcal
+from src.datatype.my_enum import TableName
 
 # モジュール内のトップレベルのコードは、モジュールの初回import時にしか行われない。
 # translator.pyは様々な.pyファイルからimportされるが、BackEndOperator()のインスタンス生成はシステム全体を通して1回しか実行されない。
@@ -90,7 +91,7 @@ def add_cooking_history(cooking_id):
 
 def replace_refrigerator(df_refrigerator_new):
     """backend_main.py内の説明を参照"""
-    backend_op.replace_refrigerator(df_refrigerator_new)
+    backend_op.push_table_by_replace(TableName.Refrigerator, df_refrigerator_new)
     return
 
 

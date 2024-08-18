@@ -5,6 +5,7 @@ from src.backend_app import df_analysis as anly
 from src.backend_main import BackEndOperator
 from src.datatype import my_struct as myst
 from tests import test_my_struct
+from src.datatype.my_enum import TableName
 
 
 @pytest.fixture
@@ -126,7 +127,7 @@ def test_cooking_info_list(backend_operator):
 
 def test_register_cooking(backend_operator):
     """
-    registor_cookingメソッドのテスト
+    registor_cooking関数のテスト
     """
     # 有効かつ空ではないなCookingInfoインスタンスを生成する。
     # 加えて関数実行前のcooking_idのリストを取得しておく
@@ -159,16 +160,43 @@ def test_register_cooking(backend_operator):
 
 
 def test_add_cooking_history(backend_operator):
-    # 料理履歴を追加するメソッドのテスト
-    pass
-    # cooking_id = 1  # 既存のCookingIDを使用
-    # backend_operator.add_cooking_history(cooking_id)
-    # 追加された履歴を検証するためのアサーションを追加
+    """
+    add_cooking_history関数のテスト
+    """
+    # 引数として用いるCookingIDを用意する。
+    # 登録済みの料理がゼロの場合はテストが実行できないため、assertで落とす。
+    cooking_id_list = backend_operator.raw_df.df_cooking["CookingID"].to_list()
+    assert len(cooking_id_list) > 0
+    cooking_id = cooking_id_list[0]
+
+    # 元のDataFrameの値を記憶しておく。
+    df_ch_orig = backend_operator.raw_df.df_cookinghistory
+    df_r_orig = backend_operator.raw_df.df_refrigerator
+
+    # 関数を実行する
+    try:
+        backend_operator.add_cooking_history(cooking_id)
+    except Exception as e:
+        pytest.fail(f"pytest failed : {e}")
+
+    # DataFrameを元の値に戻す
+    backend_operator.push_table_by_replace(TableName.CookingHistory, df_ch_orig)
+    backend_operator.push_table_by_replace(TableName.Refrigerator, df_r_orig)
+    return
 
 
-def test_replace_refrigerator(backend_operator):
+def test_push_table_by_replace(backend_operator):
+    """
+    push_table_by_replace関数のテスト。
+    Refrigeratorテーブルを用いる。
+    """
+
     def get_latest_df_refrigerator():
         return backend_operator.raw_df.df_refrigerator
+
+    def replace_refrigerator(df):
+        backend_operator.push_table_by_replace(TableName.Refrigerator, df)
+        return
 
     # 値の準備
     df_r_orig = get_latest_df_refrigerator()
@@ -177,7 +205,7 @@ def test_replace_refrigerator(backend_operator):
 
     # 関数の実行
     try:
-        backend_operator.replace_refrigerator(df_r_tmp)
+        replace_refrigerator(df_r_tmp)
     except Exception as e:
         pytest.fail(f"pytest failed : {e}")
 
@@ -187,7 +215,7 @@ def test_replace_refrigerator(backend_operator):
 
     # 元々の値に戻す
     del df_r_result, df_r_tmp  # ポカ避け
-    backend_operator.replace_refrigerator(df_r_orig)
+    replace_refrigerator(df_r_orig)
 
     # 本当に戻っているのかチェック
     df_r_restored = get_latest_df_refrigerator()
