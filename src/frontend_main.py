@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src import translator
+from src.datatype import my_struct as myst
 
 user_food_select = None
 
@@ -223,8 +224,30 @@ def show_nutrition_info_of_cooking():
 
     for ck in cooking_info_list.cookings:
         st.subheader(f"{ck.cooking_id} : {ck.cooking_name}")
-        # st.write(cooking_attribute)
-        # st.table(food_attribute)
+        # cooking_attribute DataFrameの作成
+        cooking_attribute = {
+            "料理名" : ck.cooking_name,
+            "合計カロリー" : f"{ck.calory_total:.1f}kcal",
+            "タンパク質(Protein)" : f"{ck.caloty_protein:.1f}kcal = {ck.grams_protein:.1f}g",
+            "脂質(Fat))" : f"{ck.caloty_fat:.1f}kcal = {ck.grams_fat:.1f}g",
+            "炭水化物(Carbohydrate)" : f"{ck.caloty_carbo:.1f}kcal = {ck.grams_carbo:.1f}g",
+        }
+        cooking_attribute = pd.DataFrame([cooking_attribute])
+
+        # food_attribute DataFrameの作成
+        food_attribute = []
+        for food in ck.food_attribute:
+            food_attribute.append({
+                # "食材ID" : food.fooddata_id,
+                "食材名" : food.food_name,
+                "数量" : f"{food.grams_total:.1f}g (= {food.standard_unit_name} * {food.standard_unit_numbers:.1f})",
+                "タンパク質(Protein)" : f"{food.caloty_protein:.1f}kcal = {food.grams_protein:.1f}g",
+                "脂質(Fat))" : f"{food.caloty_fat:.1f}kcal = {ck.grams_fat:.1f}g",
+                "炭水化物(Carbohydrate)" : f"{food.caloty_carbo:.1f}kcal = {food.grams_carbo:.1f}g",
+            })
+        food_attribute = pd.DataFrame(food_attribute)
+        st.dataframe(cooking_attribute)
+        st.table(food_attribute)
 
         if ck.calory_total != 0:
             # PFCバランスの計算

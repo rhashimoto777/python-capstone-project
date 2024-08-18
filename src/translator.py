@@ -3,10 +3,10 @@ from datetime import datetime
 import pandas as pd
 
 from src import backend_main
+from src.backend_app import data_analysis as anly
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
 from src.util import g_to_kcal
-from src.backend_app import data_analysis as anly
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
 backend_op = None  # BackEndOperatorのインスタンスで上書きする。
