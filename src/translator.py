@@ -7,14 +7,21 @@ from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
 from src.util import g_to_kcal
 
-# モジュール内のトップレベルのコードは、モジュールの初回import時にしか行われない。
-# translator.pyは様々な.pyファイルからimportされるが、BackEndOperator()のインスタンス生成はシステム全体を通して1回しか実行されない。
-backend_op = backend_main.BackEndOperator()
+# classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
+backend_op = None # BackEndOperatorのインスタンスで上書きする。
+INIT_FINISH = False
 
 
-def init():
-    global backend_op
-    backend_op = backend_main.BackEndOperator()
+def init(user_id="user_default"):
+    """
+    BackEndOperatorのインスタンス生成時にユーザー情報を渡せるよう、インスタンス生成処理を関数に分けて外から呼び出せるようにする。
+    起動時に1回しか呼ばれないことを想定し、一度実行されたら二度目以降は何もしない。
+    """
+    global backend_op, INIT_FINISH
+    if not INIT_FINISH:
+        backend_op = backend_main.BackEndOperator(user_id)
+        INIT_FINISH = True
+    return
 
 
 # _______________________________________________________________________

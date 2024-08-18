@@ -1,6 +1,7 @@
 import os
 import sys
 
+from src import translator
 from src.backend_app import common_info as common
 
 # プロジェクトのルートディレクトリを追加
@@ -15,11 +16,11 @@ def pytest_configure(config):
     """
     # pytest用のDataBaseに切り替える
     user_id = "_PYTEST_"
-    common.init(user_id)
+    translator.init(user_id)
 
     # pytest用のDataBaseを使うことを通知
     __line_separator()
-    __msg_print(f"pytest用のDataBaseに切り替えます。(user_id = {user_id})")
+    __msg_print(f"pytest用のDataBaseを使用します。(user_id = {user_id})")
 
     # 前回のpytestの実行内容で影響を受けないよう、pytestを実行する度にDataBaseをバックアップから復元する。
     # まずはバックアップのDataBaseが存在するかを確認する。無ければraise Exceptionしてpytestは中止。
