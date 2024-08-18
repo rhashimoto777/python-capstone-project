@@ -4,9 +4,8 @@ import pandas as pd
 
 from src import backend_main
 from src.datatype import my_struct as myst
-from src.datatype.my_enum import PFC
+from src.datatype.my_enum import PFC, TableName
 from src.util import g_to_kcal
-from src.datatype.my_enum import TableName
 
 # モジュール内のトップレベルのコードは、モジュールの初回import時にしか行われない。
 # translator.pyは様々な.pyファイルからimportされるが、BackEndOperator()のインスタンス生成はシステム全体を通して1回しか実行されない。

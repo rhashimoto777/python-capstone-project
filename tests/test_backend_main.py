@@ -1,11 +1,14 @@
+from datetime import datetime
+
 import pandas as pd
 import pytest
 
+from src import translator
 from src.backend_app import df_analysis as anly
 from src.backend_main import BackEndOperator
 from src.datatype import my_struct as myst
-from tests import test_my_struct
 from src.datatype.my_enum import TableName
+from tests import test_my_struct
 
 
 @pytest.fixture(autouse=True)
@@ -250,13 +253,60 @@ def test_add_cooking_history_01(setup_and_teardown):
     return
 
 
+def test_add_cooking_history_02(setup_and_teardown):
+    """
+    add_cooking_history関数のテスト。
+    この関数では「料理が作れなかった」時の挙動を扱う。
+    """
+    backend_operator = setup_and_teardown
+    df_ch_orig = backend_operator.raw_df.df_cookinghistory
+    df_r_orig = backend_operator.raw_df.df_refrigerator
+    df_c_orig = backend_operator.raw_df.df_cooking
+
+    def gen_cooking_info(df_r: pd.DataFrame) -> myst.CookingInfo:
+        f_id = df_r.iloc[0].loc["FoodDataID"]
+        f_grams = df_r.iloc[0].loc["Grams"]
+        f_grams *= 2
+        food_info = translator.gen_food_info(food_id=f_id, grams=f_grams)
+
+        cooking_info = translator.gen_cooking_info(
+            cooking_name="sample",
+            is_favorite=True,
+            last_update_date=datetime.now(),
+            description="sample",
+            food_attr=[food_info],
+        )
+        return cooking_info
+
+    # 冷蔵庫の在庫では作れない構成の料理データを作る。
+    assert len(df_r_orig) > 0
+    cooking_info = gen_cooking_info(df_r_orig)
+
+    # 既存のCookingHistoryに確実に存在しないCookingIDを用意するため、新しい料理を登録する。
+    cooking_id = backend_operator.register_new_cooking(cooking_info)
+    assert cooking_id is not None
+    assert cooking_id not in df_c_orig["CookingID"].tolist()
+    assert cooking_id not in df_ch_orig["CookingID"].tolist()
+    del df_c_orig
+
+    # 関数を実行する。
+    try:
+        ret = backend_operator.add_cooking_history(cooking_id)
+    except Exception as e:
+        pytest.fail(f"pytest failed : {e}")
+
+    # 料理が作れなかったことを確認する。
+    assert not ret
+    return
+
+
 def test_push_table_by_replace(setup_and_teardown):
     """
     push_table_by_replace関数のテスト。
     Refrigeratorテーブルを用いる。
     """
     backend_operator = setup_and_teardown
-    
+
     def get_latest_df_refrigerator():
         return backend_operator.raw_df.df_refrigerator
 
