@@ -134,6 +134,8 @@ def __judge_food_exist_in_refragerator(
     c_food_gram = food_info.grams_total
 
     df_rfrg = raw_df.df_refrigerator
+    if food_id not in df_rfrg["FoodDataID"].to_list():
+        return False
     df_rfrg_fid = df_rfrg[df_rfrg["FoodDataID"] == food_id]
     r_food_gram = df_rfrg_fid["Grams"].values[0]
     if r_food_gram >= c_food_gram:
@@ -275,6 +277,11 @@ def check_possible_to_make_cooking(
         c_food_gram = food.grams_total
 
         # 対応する食材の冷蔵庫内のグラム数を取得する
+
+        if food_id not in df_rfrg["FoodDataID"].to_list():
+            is_possible_to_make_cooking = False
+            break
+
         df_rfrg_fid = df_rfrg[df_rfrg["FoodDataID"] == food_id]
         r_food_gram = df_rfrg_fid["Grams"].values[0]
 
@@ -283,7 +290,9 @@ def check_possible_to_make_cooking(
             df_rfrg_after_cooking.loc[df_rfrg_fid.index, "Grams"] -= c_food_gram
         else:
             is_possible_to_make_cooking = False
-            df_rfrg_after_cooking = None
             break
+
+    if not is_possible_to_make_cooking:
+        df_rfrg_after_cooking = None
 
     return is_possible_to_make_cooking, df_rfrg_after_cooking

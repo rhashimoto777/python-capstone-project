@@ -166,8 +166,30 @@ def test_add_cooking_history(backend_operator):
     # 追加された履歴を検証するためのアサーションを追加
 
 
-# def test_replace_refrigerator(backend_operator):
-#     # 冷蔵庫の内容を置き換えるメソッドのテスト
-#     df_refrigerator = pd.DataFrame({"FoodDataID": [1, 2], "Grams": [100, 200]})
-#     backend_operator.replace_refrigerator(df_refrigerator)
-#     # 置き換え後の内容を検証するためのアサーションを追加
+def test_replace_refrigerator(backend_operator):
+    def get_latest_df_refrigerator():
+        return backend_operator.raw_df.df_refrigerator
+
+    # 値の準備
+    df_r_orig = get_latest_df_refrigerator()
+    df_r_tmp = pd.DataFrame({"FoodDataID": [1, 2], "Grams": [100, 200]})
+    assert not df_r_orig.equals(df_r_tmp)
+
+    # 関数の実行
+    try:
+        backend_operator.replace_refrigerator(df_r_tmp)
+    except Exception as e:
+        pytest.fail(f"pytest failed : {e}")
+
+    # 値が書き換わったかチェック
+    df_r_result = get_latest_df_refrigerator()
+    assert df_r_result.equals(df_r_tmp)
+
+    # 元々の値に戻す
+    del df_r_result, df_r_tmp  # ポカ避け
+    backend_operator.replace_refrigerator(df_r_orig)
+
+    # 本当に戻っているのかチェック
+    df_r_restored = get_latest_df_refrigerator()
+    assert df_r_restored.equals(df_r_orig)
+    return
