@@ -75,7 +75,7 @@ def _gen_db_path_and_name(user_id):
     global DB_PATH
     global DB_FILENAME
     global DB_BACKUP_FILENAME
-    DB_PATH = os.path.join(ROOT_PATH, "data", user_id)
+    DB_PATH = os.path.join(ROOT_PATH, "data", 'users', user_id)
     DB_FILENAME = "cooking_system.db"
     DB_BACKUP_FILENAME = "cooking_system_backup.db"
     return
@@ -95,7 +95,7 @@ def _memorize_user_id(user_id):
 # ________________________________________________________________________________________________________________________
 if __name__ == "__main__":
     """
-    動作テスト用
+    中身閲覧用
     """
     init()
     print(f"ROOT_PATH              = {ROOT_PATH}")
@@ -103,3 +103,6 @@ if __name__ == "__main__":
     print(f"DB_FILENAME            = {DB_FILENAME}")
     print(f"FOODDATA_JSON_PATH     = {FOODDATA_JSON_PATH}")
     print(f"FOODDATA_JSON_FILENAME = {FOODDATA_JSON_FILENAME}")
+    print(f"USER_ID                = {USER_ID}")
+    print(f"INIT_FINISH            = {INIT_FINISH}")
+
