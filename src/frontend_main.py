@@ -147,32 +147,27 @@ def resister_cooking():
     # 登録ボタン
     register_btn = st.button("料理を登録")
     if register_btn:
-        dict = []
+        food_attribute = []
         for food in user_food_select:
-            dict.append({"FoodDataID": food["f_id"], "Grams": food["g"]})
-        df_food_and_grams = pd.DataFrame(dict)
+            f_elem = translator.gen_food_info(food_id=food["f_id"], grams=food["g"])
+            food_attribute.append(f_elem)
 
-        dict = []
-        dict.append(
-            {
-                "CookingName": c_name,
-                "isFavorite": is_favorite,
-                "LastUpdateDate": datetime.now(),
-                "Description": c_desc,
-            }
+        cooking_info = translator.gen_cooking_info(
+            cooking_name=c_name,
+            is_favorite=is_favorite,
+            last_update_date=datetime.now(),
+            description=c_desc,
+            food_attr=food_attribute,
         )
-        df_cooking_attributes = pd.DataFrame(dict)
-        is_success, msg = translator.add_cooking(
-            df_food_and_grams, df_cooking_attributes
-        )
-        if is_success:
-            st.success("料理を追加しました")
-            st.balloons()
-        else:
-            if msg == "same_cooking_already_exist":
-                st.error("同じ材料構成の料理が既に登録されています")
-            else:
+        if translator.judge_is_new_cooking(cooking_info):
+            try:
+                translator.register_new_cooking(cooking_info)
+                st.success("料理を追加しました")
+                st.balloons()
+            except Exception:
                 st.error("料理の追加に失敗しました")
+        else:
+            st.error("同じ材料構成の料理が既に登録されています")
     return
 
 
@@ -221,50 +216,91 @@ def show_nutrition_info_of_cooking():
     『CookingIDごとの「料理の総カロリー」、「PFCそれぞれのグラム量」、「PFCそれぞれのカロリー量」』
     に相当する情報の取得方法とデータ利用方法についてのデモ。
     """
-    cooking_details = translator.get_cooking_details()
+    cooking_info_list = translator.get_cooking_info_list()
 
     # タイトル
     # st.header("食材とPFCバランス")
 
-    for cooking_details_elem in cooking_details:
-        cooking_id = cooking_details_elem["CookingID"]
-        cooking_attribute = cooking_details_elem["CookingAttribute"]
-        food_attribute = cooking_details_elem["FoodAttribute"]
+    for i, ck in enumerate(cooking_info_list.cookings):
+        st.subheader(f"No.{ck.cooking_id} : {ck.cooking_name}")
 
-        cooking_name = cooking_attribute["CookingName"].values[0]
+        # cooking_attribute DataFrameの作成
+        cooking_attribute = {
+            "合計カロリー": f"{ck.calory_total:.1f}kcal",
+            "タンパク質(Protein)": f"{ck.caloty_protein:.1f}kcal ({ck.grams_protein:.1f}g)",
+            "脂質(Fat)": f"{ck.caloty_fat:.1f}kcal ({ck.grams_fat:.1f}g)",
+            "炭水化物(Carbohydrate)": f"{ck.caloty_carbo:.1f}kcal ({ck.grams_carbo:.1f}g)",
+        }
+        cooking_attribute = pd.DataFrame([cooking_attribute]).reset_index(drop=True)
 
-        st.subheader(f"{cooking_id} : {cooking_name}")
-        st.write(cooking_attribute)
-        st.table(food_attribute)
-
-        # 各カロリーの取得
-        total_calories = float(cooking_attribute["CookingCalory_Total"].values[0])
-        protein_calories = float(cooking_attribute["CookingCalory_Protein"].values[0])
-        fat_calories = float(cooking_attribute["CookingCalory_Fat"].values[0])
-        carbo_calories = float(cooking_attribute["CookingCalory_Carbo"].values[0])
-
-        if total_calories != 0:
-            # PFCバランスの計算
-            percentages = {
-                "Protein": (protein_calories / total_calories) * 100,
-                "Fat": (fat_calories / total_calories) * 100,
-                "Carbohydrate": (carbo_calories / total_calories) * 100,
-            }
-
-            # ラベルと値のリスト化
-            labels = list(percentages.keys())
-            values = list(percentages.values())
-
-            # 円グラフの作成
-            fig = px.pie(
-                values=values,
-                names=labels,
-                title=f"PFCバランス (CookingID: {cooking_id})",
+        # DataFrameの作成
+        food_quantity = []
+        for food in ck.food_attribute:
+            food_quantity.append(
+                {
+                    "食材名": food.food_name,
+                    "グラム数": food.grams_total,
+                    "数量": f"{food.standard_unit_name} * 【{food.standard_unit_numbers:.1f}】",
+                }
             )
+        food_quantity = pd.DataFrame(food_quantity)
 
-            #  円グラフの表示
-        st.plotly_chart(fig)
-        st.write(f"Total Calories: {total_calories} kcal")
+        food_calory = []
+        for food in ck.food_attribute:
+            food_calory.append(
+                {
+                    "食材名": food.food_name,
+                    "Total": food.calory_total,
+                    "Protein": food.caloty_protein,
+                    "Fat": food.caloty_fat,
+                    "Carbohydrate": food.caloty_carbo,
+                }
+            )
+        food_calory = pd.DataFrame(food_calory)
+
+        # 表示
+        col1, col2 = st.columns(2)
+        with col1:
+            st.dataframe(cooking_attribute)
+            button1 = st.button(
+                "使用する食材と量", key=f"show_nutrition_info_of_cooking_button1_{i}"
+            )
+            if button1:
+                st.dataframe(food_quantity)
+
+            # with st.expander("食材ごとのカロリー", expanded=False):
+            button2 = st.button(
+                "食材ごとのカロリー", key=f"show_nutrition_info_of_cooking_button2_{i}"
+            )
+            if button2:
+                st.caption("単位は[kcal]")
+                st.dataframe(food_calory)
+
+        with col2:
+            if ck.calory_total != 0:
+                # PFCバランスの計算
+                percentages = {
+                    "Protein": ck.caloty_protein,
+                    "Fat": ck.caloty_fat,
+                    "Carbohydrate": ck.grams_carbo,
+                }
+
+                # ラベルと値のリスト化
+                labels = list(percentages.keys())
+                values = list(percentages.values())
+
+                # 円グラフの作成
+                fig = px.pie(
+                    values=values,
+                    names=labels,
+                    title=f"PFCのカロリー比率 ({ck.cooking_name})",
+                )
+
+                #  円グラフの表示
+                st.plotly_chart(fig)
+            else:
+                st.caption("合計カロリーがゼロ")
+
     return
 
 
@@ -290,63 +326,10 @@ def show_cookinghistory_registered():
     ].to_html(index=False, justify="left")
     st.markdown(html, unsafe_allow_html=True)
 
-    cooking_details = translator.get_cooking_details()
-
     """
     過去に作った料理ごとのカロリーとPFCバランス等を表示する。
     """
 
     st.subheader("過去に作った料理ごとのカロリーとPFCバランス")
-
-    cooking_details_cookingid = [d.get("CookingID") for d in cooking_details]
-
-    for cooking_id in cooking_details_cookingid:
-        if cooking_id in df_cookinghistory["CookingID"].values:
-            for cooking_details_elem in cooking_details:
-                if cooking_details_elem["CookingID"] == cooking_id:
-                    cooking_attribute = cooking_details_elem["CookingAttribute"]
-                    food_attribute = cooking_details_elem["FoodAttribute"]
-
-                    cooking_name = cooking_attribute["CookingName"].values[0]
-
-                    st.subheader(f"{cooking_id} : {cooking_name}")
-                    st.write(cooking_attribute)
-                    st.table(food_attribute)
-
-                    # 各カロリーの取得
-                    total_calories = float(
-                        cooking_attribute["CookingCalory_Total"].values[0]
-                    )
-                    protein_calories = float(
-                        cooking_attribute["CookingCalory_Protein"].values[0]
-                    )
-                    fat_calories = float(
-                        cooking_attribute["CookingCalory_Fat"].values[0]
-                    )
-                    carbo_calories = float(
-                        cooking_attribute["CookingCalory_Carbo"].values[0]
-                    )
-
-                    if total_calories != 0:
-                        # PFCバランスの計算
-                        percentages = {
-                            "Protein": (protein_calories / total_calories) * 100,
-                            "Fat": (fat_calories / total_calories) * 100,
-                            "Carbohydrate": (carbo_calories / total_calories) * 100,
-                        }
-
-                        # ラベルと値のリスト化
-                        labels = list(percentages.keys())
-                        values = list(percentages.values())
-
-                        # 円グラフの作成
-                        fig = px.pie(
-                            values=values,
-                            names=labels,
-                            title=f"PFCバランス (CookingID: {cooking_id})",
-                        )
-
-                        #  円グラフの表示
-                    st.plotly_chart(fig)
-                    st.write(f"Total Calories: {total_calories} kcal")
+    show_nutrition_info_of_cooking()
     return

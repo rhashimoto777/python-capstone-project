@@ -44,3 +44,11 @@ def g_to_kcal(g_val: int | float, type: PFC) -> int | float:
             return g_val * 4.0
         case _:
             raise ValueError(f"入力された値 (type=「{type}」)は無効なPFC-enumです")
+
+
+def backend_system_msg(msg):
+    """
+    Backend側で用いるシステムメッセージ表示用のprint関数
+    """
+    print(f"[backend : system-message] {msg}")
+    return
