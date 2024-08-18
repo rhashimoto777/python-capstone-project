@@ -169,7 +169,7 @@ def gen_df_to_register_c(
         }
     )
 
-    return pd.DataFrame(dict_cooking), pd.DataFrame(dict_cookingfooddata)
+    return pd.DataFrame(dict_cooking), pd.DataFrame(dict_cookingfooddata), cooking_id
 
 
 def __issue_new_id(existing_id_list: list[int]) -> int:

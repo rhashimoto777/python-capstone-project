@@ -1,7 +1,8 @@
 import pandas as pd
 
 from src.backend_app import backend_common as common
-from src.backend_app import df_analysis, sqlite_db
+from src.backend_app import df_analysis as anly
+from src.backend_app import sqlite_db
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import TableName
 
@@ -29,9 +30,9 @@ class Singleton(object):
 
 # ________________________________________________________________________________________________________________________
 class BackEndOperator(Singleton):
-    def __init__(self):
+    def __init__(self, user_id="user_default"):
         common.system_msg_print("********** Generating Backend Instance ********")
-        common.init()
+        common.init(user_id)
         self.db_operator = sqlite_db.DataBaseOperator()
         self.raw_df = None
         self.cooking_info_list = None
@@ -40,14 +41,14 @@ class BackEndOperator(Singleton):
     # ********************* global関数群 *********************
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
-        existing = df_analysis.find_same_cooking(self.cooking_info_list, cooking_info)
+        existing = anly.find_same_cooking(self.cooking_info_list, cooking_info)
         if existing is None:
-            df_c, df_cfd = df_analysis.gen_df_to_register_c(self.raw_df, cooking_info)
+            df_c, df_cfd, cid = anly.gen_df_to_register_c(self.raw_df, cooking_info)
             self.__push_table_by_append(TableName.Cooking, df_c)
             self.__push_table_by_append(TableName.CookingFoodData, df_cfd)
         else:
             raise ValueError("既に同じ食材構成の料理が登録されています")
-        return
+        return cid
 
     def add_cooking_history(self, cooking_id):
         """
@@ -56,7 +57,7 @@ class BackEndOperator(Singleton):
         冷蔵庫に十分な在庫が無い場合は何もせず、Falseを返す。
         """
         fg_can_cook, df_cookinghistory, df_rf_after_cooking = (
-            df_analysis.gen_df_to_add_cooking_history(
+            anly.gen_df_to_add_cooking_history(
                 self.raw_df, self.cooking_info_list, cooking_id
             )
         )
@@ -81,7 +82,7 @@ class BackEndOperator(Singleton):
         SQLiteDBをDataFrameに変換し、classのメンバ変数に上書きする。
         """
         self.raw_df = self.db_operator.get_raw_df()
-        self.cooking_info_list = df_analysis.gen_cooking_info_list(self.raw_df)
+        self.cooking_info_list = anly.gen_cooking_info_list(self.raw_df)
         return
 
     def __push_table_by_append(self, table_name, df):

@@ -8,6 +8,8 @@ DB_FILENAME = None
 DB_BACKUP_FILENAME = None
 FOODDATA_JSON_PATH = None
 FOODDATA_JSON_FILENAME = None
+
+USER_ID = None
 INIT_FINISH = False
 
 # ________________________________________________________________________________________________________________________
@@ -24,6 +26,8 @@ def init(user_id="user_default"):
         _gen_root_path()
         _gen_fooddata_json_path_and_name()
         _gen_db_path_and_name(user_id)
+        _memorize_user_id(user_id)
+        INIT_FINISH = True
     else:
         pass
     return
@@ -74,6 +78,17 @@ def _gen_db_path_and_name(user_id):
     DB_PATH = os.path.join(ROOT_PATH, "data", user_id)
     DB_FILENAME = "cooking_system.db"
     DB_BACKUP_FILENAME = "cooking_system_backup.db"
+    return
+
+
+def _memorize_user_id(user_id):
+    """
+    ユーザーIDをグローバル変数に記憶する。
+    """
+    global USER_ID
+    # 念のためスペースをユーザーIDに変換する
+    user_id.replace(" ", "_")
+    USER_ID = user_id
     return
 
 
