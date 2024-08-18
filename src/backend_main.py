@@ -1,7 +1,7 @@
 import pandas as pd
 
 from src import util
-from src.backend_app import backend_common_info as common
+from src.backend_app import common_info as common
 from src.backend_app import data_analysis as anly
 from src.backend_app import sqlite_db
 from src.datatype import my_struct as myst
@@ -32,7 +32,7 @@ class Singleton(object):
 # ________________________________________________________________________________________________________________________
 class BackEndOperator(Singleton):
     def __init__(self, user_id="user_default"):
-        util.backend_system_msg("********** Generating Backend Instance ********")
+        util.backend_system_msg(f"********** Generating Backend Instance (used_id = {user_id}) ********")
         common.init(user_id)
         self.db_operator = sqlite_db.DataBaseOperator()
         self.raw_df = None
