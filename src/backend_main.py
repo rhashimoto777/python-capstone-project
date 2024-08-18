@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pandas as pd
 
 from src.backend_app import backend_common as common
@@ -8,13 +6,28 @@ from src.datatype import my_struct as myst
 from src.datatype.my_enum import TableName
 
 
+# ________________________________________________________________________________________________________________________
 class Singleton(object):
+    """
+    BackEndOperator内では、各種操作ごとに毎回DataBaseにアクセスして速度が遅くなることを防ぐため、
+    DataBaseと対になるメンバ変数を持っている。このメンバ変数は常にDataBaseと整合している必要がある。
+    もし仮にBackEndOperatorのインスタンスが2つ以上生成されると、インスタンスAがDataBaseを更新したときに
+    インスタンスB内のメンバ変数を同時に反映することが出来ず、メンバ変数とDataBaseとが整合しなくなる可能性が生じる。
+    そのため、BackEndOperatorのインスタンスは常に1つである必要がある。
+    (一方で初期化・値共有の実装簡便化のため、ModuledではなくClassで実装したい)
+
+    BackEndOperatorのインスタンスは、moduleであり単一インスタンスであることが保証されているtranslator内でしか
+    インスタンス生成しないため、基本的にBackEndOperatorのインスタンスは1つだけであるが、
+    念のため実装上の保証としてSingletonデザインパターンを使ってインスタンスが1つだけにしかならないようにする。
+    """
+
     def __new__(cls, *args, **kargs):
         if not hasattr(cls, "_instance"):
             cls._instance = super(Singleton, cls).__new__(cls)
         return cls._instance
 
 
+# ________________________________________________________________________________________________________________________
 class BackEndOperator(Singleton):
     def __init__(self):
         common.system_msg_print("********** Generating Backend Instance ********")
@@ -24,8 +37,7 @@ class BackEndOperator(Singleton):
         self.cooking_info_list = None
         self.__pull_data()
 
-    # ________________________________________________________________________________________________________________________
-    # global関数群
+    # ********************* global関数群 *********************
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
         existing = df_analysis.find_same_cooking(self.cooking_info_list, cooking_info)
@@ -63,8 +75,7 @@ class BackEndOperator(Singleton):
         self.__push_table_by_replace(TableName.Refrigerator, df_refrigerator)
         return
 
-    # ________________________________________________________________________________________________________________________
-    # private関数群
+    # ********************* private関数群 *********************
     def __pull_data(self):
         """
         SQLiteDBをDataFrameに変換し、classのメンバ変数に上書きする。

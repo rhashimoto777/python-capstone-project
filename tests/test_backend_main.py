@@ -2,32 +2,120 @@ import pandas as pd
 import pytest
 
 from src.backend_main import BackEndOperator
+from src.datatype import my_struct as myst
 
 
 @pytest.fixture
-def backend_operator():
-    # テスト用のBackEndOperatorインスタンスを作成
+def backend_operator() -> BackEndOperator:
+    """
+    テスト用のBackEndOperatorインスタンスを作成する。
+    """
     return BackEndOperator()
 
 
-# def test_get_df_from_db(backend_operator):
-#     # DBからDataFrameを取得するメソッドのテスト
-#     df_dict = backend_operator.get_df_from_db()
-#     assert isinstance(df_dict, dict)
-#     assert "Cooking" in df_dict
-#     assert "CookingFoodData" in df_dict
-#     assert "FoodData" in df_dict
+def test_raw_df(backend_operator):
+    """
+    BackEndOperatorのインスタンス生成時と同時に、raw_dfが正常に生成されるかを確認する。
+    """
+    # DBからDataFrameを取得できているかを確認する。
+    raw_df = backend_operator.raw_df
+    assert isinstance(raw_df, myst.RawDataFrame)
+
+    # 得られたDataFrameに対して妥当性を確認する
+    # ... 共通処理を関数内関数として定義しておく
+    def check_keys_exist(df: pd.DataFrame, required_keys: list[str]):
+        return all([k in df.columns for k in required_keys])
+
+    # ... 明らかにkey名としてあり得ない文字列がkey名に含まれないことを確認する。（上記関数内関数の妥当性確認のため）
+    assert not check_keys_exist(raw_df.df_fooddata, ["dsfagfsdagasdga"])
+
+    # ... FoodDataテーブル
+    assert check_keys_exist(
+        raw_df.df_fooddata,
+        [
+            "FoodDataID",
+            "FoodName",
+            "Calory_Total",
+            "Grams_Protein",
+            "Grams_Fat",
+            "Grams_Carbo",
+            "StandardUnit_Name",
+            "StandardUnit_Grams",
+        ],
+    )
+
+    # ... CookingFoodDataテーブル
+    assert check_keys_exist(
+        raw_df.df_cookingfooddata,
+        [
+            "CookingID",
+            "FoodDataID",
+        ],
+    )
+
+    # ... Cookingテーブル
+    assert check_keys_exist(
+        raw_df.df_cooking,
+        [
+            "CookingID",
+            "CookingName",
+            "IsFavorite",
+            "LastUpdateDate",
+            "Description",
+        ],
+    )
+
+    # ... CookingHistoryテーブル
+    assert check_keys_exist(
+        raw_df.df_cookinghistory,
+        [
+            "CookingHistoryID",
+            "CookingID",
+            "IssuedDate",
+        ],
+    )
+
+    # ... Refrigeratorテーブル
+    assert check_keys_exist(
+        raw_df.df_refrigerator,
+        [
+            "FoodDataID",
+            "Grams",
+        ],
+    )
+
+    # ... ShoppingFoodDataテーブルの作成
+    assert check_keys_exist(
+        raw_df.df_shoppingfooddata,
+        [
+            "ShoppingHistoryID",
+            "FoodDataID",
+            "Grams",
+        ],
+    )
+
+    # ... ShoppingHistoryテーブルの作成
+    assert check_keys_exist(
+        raw_df.df_shoppinghistory,
+        [
+            "ShoppingHistoryID",
+            "IssuedDate",
+        ],
+    )
 
 
-# def test_get_cooking_details(backend_operator):
-#     # 料理の詳細情報を取得するメソッドのテスト
-#     details = backend_operator.get_cooking_details()
-#     assert isinstance(details, list)
-#     assert len(details) > 0
-#     for detail in details:
-#         assert "CookingID" in detail
-#         assert "CookingAttribute" in detail
-#         assert "FoodAttribute" in detail
+def test_cooking_info_list(backend_operator):
+    """
+    BackEndOperatorのインスタンス生成時と同時に、raw_dfが正常に生成されるかを確認する。
+    """
+    # DBからDataFrameを取得できているかを確認する。
+    cilist = backend_operator.cooking_info_list
+    assert isinstance(cilist, myst.CookingInfoList)
+
+    # cilistに異常な値が入っていないことは、CookingInfoListデータクラスの__pre_init__でチェック済。
+    # ここでは、何らか空ではない値が入っていることを確認する。
+    # (前提として、DBに登録されているファイルには1つ以上の料理が登録されているとする)
+    assert len(cilist.cookings) > 0
 
 
 # def test_add_cooking(backend_operator):
