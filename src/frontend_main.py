@@ -15,7 +15,7 @@ def main_page():
     start_cooking()
     show_cookings_registered()
     show_refrigerator_fooddata()
-    show_nutrition_info_of_cooking()
+    show_nutrition_info_of_cooking("direct")
     show_cookinghistory_registered()
     return
 
@@ -70,6 +70,7 @@ def choice_food():
     food_options = df_fooddata["FoodName"].unique().tolist()
     # 食材を複数選択
     st.subheader("食材を選んでください")
+    selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
         selected_foods = st.multiselect("", food_options)
@@ -113,25 +114,26 @@ def choice_food():
         ## 合計値を表示
         ## st.write("選択した食材の総カロリー:")
     with col2:
+        if len(selected_foods) > 0:
 
-        ## st.write(f"総タンパク質: {total_protein:.2f} g")
-        ## st.write(f"総脂質: {total_fat:.2f} g")
-        ## st.write(f"総炭水化物: {total_carbs:.2f} g")
+            ## st.write(f"総タンパク質: {total_protein:.2f} g")
+            ## st.write(f"総脂質: {total_fat:.2f} g")
+            ## st.write(f"総炭水化物: {total_carbs:.2f} g")
 
-        # # PFCバランスの円グラフを作成
-        fig = go.Figure(
-            data=[
-                go.Pie(
-                    labels=["タンパク質", "脂質", "炭水化物"],
-                    values=[total_protein, total_fat, total_carbs],
-                    textinfo="label+percent",
-                )
-            ]
-        )
-        # st.write("PFCバランス:")
-        st.plotly_chart(fig)
-        st.write(f"総カロリー: {total_kcal:.2f} kcal")
-        return
+            # # PFCバランスの円グラフを作成
+            fig = go.Figure(
+                data=[
+                    go.Pie(
+                        labels=["タンパク質", "脂質", "炭水化物"],
+                        values=[total_protein, total_fat, total_carbs],
+                        textinfo="label+percent",
+                    )
+                ]
+            )
+            # st.write("PFCバランス:")
+            st.plotly_chart(fig)
+            st.write(f"総カロリー: {total_kcal:.2f} kcal")
+    return
 
 
 def resister_cooking():
@@ -210,7 +212,7 @@ def start_cooking():
     return
 
 
-def show_nutrition_info_of_cooking():
+def show_nutrition_info_of_cooking(unique_id):
     """
     JIRAチケット「PCPG-13」に対応する、
     『CookingIDごとの「料理の総カロリー」、「PFCそれぞれのグラム量」、「PFCそれぞれのカロリー量」』
@@ -223,15 +225,6 @@ def show_nutrition_info_of_cooking():
 
     for i, ck in enumerate(cooking_info_list.cookings):
         st.subheader(f"No.{ck.cooking_id} : {ck.cooking_name}")
-
-        # cooking_attribute DataFrameの作成
-        cooking_attribute = {
-            "合計カロリー": f"{ck.calory_total:.1f}kcal",
-            "タンパク質(Protein)": f"{ck.caloty_protein:.1f}kcal ({ck.grams_protein:.1f}g)",
-            "脂質(Fat)": f"{ck.caloty_fat:.1f}kcal ({ck.grams_fat:.1f}g)",
-            "炭水化物(Carbohydrate)": f"{ck.caloty_carbo:.1f}kcal ({ck.grams_carbo:.1f}g)",
-        }
-        cooking_attribute = pd.DataFrame([cooking_attribute]).reset_index(drop=True)
 
         # DataFrameの作成
         food_quantity = []
@@ -261,16 +254,26 @@ def show_nutrition_info_of_cooking():
         # 表示
         col1, col2 = st.columns(2)
         with col1:
-            st.dataframe(cooking_attribute)
+            # st.dataframe(cooking_attribute)
+            st.markdown(
+                f"""
+                - 【合計カロリー】{ck.calory_total:.1f}kcal
+                - 【タンパク質(Protein)】{ck.caloty_protein:.1f}kcal ({ck.grams_protein:.1f}g)
+                - 【脂質(Fat)】{ck.caloty_fat:.1f}kcal ({ck.grams_fat:.1f}g)
+                - 【炭水化物(Carbohydrate)】{ck.caloty_carbo:.1f}kcal ({ck.grams_carbo:.1f}g)
+            """
+            )
             button1 = st.button(
-                "使用する食材と量", key=f"show_nutrition_info_of_cooking_button1_{i}"
+                "使用する食材と量",
+                key=f"show_nutrition_info_of_cooking_button1_{i}_{unique_id}",
             )
             if button1:
                 st.dataframe(food_quantity)
 
             # with st.expander("食材ごとのカロリー", expanded=False):
             button2 = st.button(
-                "食材ごとのカロリー", key=f"show_nutrition_info_of_cooking_button2_{i}"
+                "食材ごとのカロリー",
+                key=f"show_nutrition_info_of_cooking_button2_{i}_{unique_id}",
             )
             if button2:
                 st.caption("単位は[kcal]")
@@ -331,5 +334,5 @@ def show_cookinghistory_registered():
     """
 
     st.subheader("過去に作った料理ごとのカロリーとPFCバランス")
-    show_nutrition_info_of_cooking()
+    show_nutrition_info_of_cooking("scr")
     return
