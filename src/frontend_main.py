@@ -226,15 +226,6 @@ def show_nutrition_info_of_cooking(unique_id):
     for i, ck in enumerate(cooking_info_list.cookings):
         st.subheader(f"No.{ck.cooking_id} : {ck.cooking_name}")
 
-        # cooking_attribute DataFrameの作成
-        cooking_attribute = {
-            "合計カロリー": f"{ck.calory_total:.1f}kcal",
-            "タンパク質(Protein)": f"{ck.caloty_protein:.1f}kcal ({ck.grams_protein:.1f}g)",
-            "脂質(Fat)": f"{ck.caloty_fat:.1f}kcal ({ck.grams_fat:.1f}g)",
-            "炭水化物(Carbohydrate)": f"{ck.caloty_carbo:.1f}kcal ({ck.grams_carbo:.1f}g)",
-        }
-        cooking_attribute = pd.DataFrame([cooking_attribute]).reset_index(drop=True)
-
         # DataFrameの作成
         food_quantity = []
         for food in ck.food_attribute:
@@ -263,16 +254,26 @@ def show_nutrition_info_of_cooking(unique_id):
         # 表示
         col1, col2 = st.columns(2)
         with col1:
-            st.dataframe(cooking_attribute)
+            # st.dataframe(cooking_attribute)
+            st.markdown(
+                f"""
+                - 【合計カロリー】{ck.calory_total:.1f}kcal
+                - 【タンパク質(Protein)】{ck.caloty_protein:.1f}kcal ({ck.grams_protein:.1f}g)
+                - 【脂質(Fat)】{ck.caloty_fat:.1f}kcal ({ck.grams_fat:.1f}g)
+                - 【炭水化物(Carbohydrate)】{ck.caloty_carbo:.1f}kcal ({ck.grams_carbo:.1f}g)
+            """
+            )
             button1 = st.button(
-                "使用する食材と量", key=f"show_nutrition_info_of_cooking_button1_{i}_{unique_id}"
+                "使用する食材と量",
+                key=f"show_nutrition_info_of_cooking_button1_{i}_{unique_id}",
             )
             if button1:
                 st.dataframe(food_quantity)
 
             # with st.expander("食材ごとのカロリー", expanded=False):
             button2 = st.button(
-                "食材ごとのカロリー", key=f"show_nutrition_info_of_cooking_button2_{i}_{unique_id}"
+                "食材ごとのカロリー",
+                key=f"show_nutrition_info_of_cooking_button2_{i}_{unique_id}",
             )
             if button2:
                 st.caption("単位は[kcal]")
