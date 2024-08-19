@@ -264,16 +264,14 @@ def show_nutrition_info_of_cooking(unique_id):
             """
             )
             button1 = st.button(
-                "使用する食材と量",
-                key=f"show_nutrition_info_of_cooking_button1_{i}_{unique_id}",
+                "使用する食材と量", key=f"show_nutrition_info_of_cooking_button1_{i}_{unique_id}"
             )
             if button1:
                 st.dataframe(food_quantity)
 
             # with st.expander("食材ごとのカロリー", expanded=False):
             button2 = st.button(
-                "食材ごとのカロリー",
-                key=f"show_nutrition_info_of_cooking_button2_{i}_{unique_id}",
+                "食材ごとのカロリー", key=f"show_nutrition_info_of_cooking_button2_{i}_{unique_id}"
             )
             if button2:
                 st.caption("単位は[kcal]")
