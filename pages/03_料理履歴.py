@@ -28,7 +28,7 @@ with tab1:
 
 with tab2:
     st.subheader("PFCバランス")
-    frontend_main.show_nutrition_info_of_cooking()
+    frontend_main.show_nutrition_info_of_cooking("03_料理履歴")
 
 with tab3:
     st.subheader("カロリー摂取")
