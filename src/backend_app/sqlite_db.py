@@ -21,7 +21,7 @@ class DataBaseCommon:
         それらを呼び出し元で複数回定義すると煩雑だがバグの素となり得る。（どこかで上記のいずれかを忘れたり誤記するかもしれない）
         そのため、with句を用いてDB接続する際に、同時に上記操作が全て行えるように本関数を定義している。
         """
-        os.chdir(common.DB_PATH)
+        os.chdir(common.DB_DIR)
         conn = sqlite3.connect(common.DB_FILENAME)
         try:
             yield conn
@@ -140,8 +140,8 @@ class DataBaseCreator(DataBaseCommon):
         common.init()  # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
 
         # 「DataBaseの本ファイル」「DataBaseのBackupファイル」のPathを取得
-        self.db_path = os.path.join(common.DB_PATH, common.DB_FILENAME)
-        self.db_bk_path = os.path.join(common.DB_PATH, common.DB_BACKUP_FILENAME)
+        self.db_path = os.path.join(common.DB_DIR, common.DB_FILENAME)
+        self.db_bk_path = os.path.join(common.DB_DIR, common.DB_BACKUP_FILENAME)
 
         # 「DataBaseの本ファイル」「DataBaseのBackupファイル」が存在するかを判定
         self.is_db_exist: bool = os.path.exists(self.db_path)
@@ -212,7 +212,7 @@ class DataBaseCreator(DataBaseCommon):
         いずれかを補正する必要があるが、「食材の総カロリー」を補正する方針とする。
         """
         # jsonの読み込み
-        os.chdir(common.FOODDATA_JSON_PATH)
+        os.chdir(common.FOODDATA_JSON_DIR)
         with open(common.FOODDATA_JSON_FILENAME, "r", encoding="utf-8") as file:
             data = json.load(file)
         df = pd.DataFrame(data)
@@ -252,7 +252,7 @@ class DataBaseCreator(DataBaseCommon):
         """
         DBを作成する。DBが既に存在する場合は何もしない。
         """
-        os.makedirs(common.DB_PATH, exist_ok=True)
+        os.makedirs(common.DB_DIR, exist_ok=True)
 
         # データベースを作成または接続
         with self.get_connection_to_db() as conn:

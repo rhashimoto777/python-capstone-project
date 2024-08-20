@@ -9,7 +9,7 @@ from src.datatype.my_enum import PFC, TableName
 from src.util import g_to_kcal
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
-backend_op = None  # BackEndOperatorのインスタンスで上書きする。
+backend_op = backend_main.BackEndOperator()
 INIT_FINISH = False
 
 
@@ -22,6 +22,11 @@ def init(user_id="user_default"):
     if not INIT_FINISH:
         backend_op = backend_main.BackEndOperator(user_id)
         INIT_FINISH = True
+    return
+
+
+def switch_user(user_id="user_default"):
+    backend_op.switch_user(user_id)
     return
 
 

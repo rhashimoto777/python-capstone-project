@@ -40,8 +40,13 @@ class BackEndOperator(Singleton):
         self.raw_df = None
         self.cooking_info_list = None
         self.__pull_data()
+        return
 
     # ********************* global関数群 *********************
+    def switch_user(self, user_id="user_default"):
+        common.update()
+        self.__pull_data
+        return
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
         existing = anly.find_same_cooking(self.cooking_info_list, cooking_info)

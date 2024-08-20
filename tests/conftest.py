@@ -48,7 +48,7 @@ def __line_separator():
 
 
 def check_backup_db_file_exist():
-    db_bk_path = os.path.join(common.DB_PATH, common.DB_BACKUP_FILENAME)
+    db_bk_path = os.path.join(common.DB_DIR, common.DB_BACKUP_FILENAME)
     __msg_print(f"DataBaseのバックアップファイルが存在するか確認します。 {db_bk_path}")
 
     file_exist: bool = os.path.exists(db_bk_path)
@@ -61,7 +61,7 @@ def check_backup_db_file_exist():
 
 
 def delete_existing_db_file():
-    db_path = os.path.join(common.DB_PATH, common.DB_FILENAME)
+    db_path = os.path.join(common.DB_DIR, common.DB_FILENAME)
     __msg_print(f"既にDataBaseファイルが存在していれば消去します。 {db_path}")
 
     file_exist: bool = os.path.exists(db_path)
