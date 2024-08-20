@@ -10,16 +10,6 @@ from src import translator
 user_food_select = None
 
 
-def main_page():
-    resister_cooking()
-    start_cooking()
-    show_cookings_registered()
-    show_refrigerator_fooddata()
-    show_nutrition_info_of_cooking("direct")
-    show_cookinghistory_registered()
-    return
-
-
 def show_cookings_registered():
     """
     既に登録済みの料理を表示する。

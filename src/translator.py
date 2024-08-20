@@ -8,14 +8,22 @@ from src.backend_app import data_analysis as anly
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
 from src.util import g_to_kcal
+from src.backend_app import user_id_manager
+from typing import Tuple
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
 backend_op = backend_main.BackEndOperator()
+userman = user_id_manager.UserIdManager()
 
 
 def switch_user(user_id=common.USER_DEFAULT):
     backend_op.switch_user(user_id)
+    userman.switch_user(user_id)
     return
+
+
+def get_user_id_manager() -> Tuple[user_id_manager.UserIdManager, str]:
+    return userman, common.USER_ID
 
 
 # _______________________________________________________________________

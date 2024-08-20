@@ -1,4 +1,5 @@
 from src import frontend_main, translator
+import streamlit as st
 
 
 # ________________________________________________________________________________________________________________________
@@ -10,23 +11,48 @@ def main_page():
 
     また、この関数が一番最初に実行されるため、各種初回処理を行う。
     """
-    # TBD : ユーザーIDの選択UI
+    userman, login_id = translator.get_user_id_manager()
+    st.title(f"現在【{login_id}】でログインしています")
 
-    # ************************************
-    # translatorクラス内でBackEndOperatorのインスタンスを生成する。
-    # この時点でuser_idを渡し、ユーザーIDごとのDBを呼び出す。（何も指定しなければuser_default）
-    # ************************************
-    translator.switch_user()
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("ユーザーの切り替え")
 
-    # ************************************
-    # frontend内でtranslator-APIを使う処理は必ず translator.init() を実行した後で行うこと。
-    # そうしないとBackEndOperatorのインスタンスがまだ出来ていないので、各種APIが動作しない。
-    # ************************************
-    frontend_main.main_page()
+        selected_user = st.selectbox("ユーザーを選択してください", userman.user_id_list)
+
+    if selected_user is not None:
+        bt = st.button(
+            "ユーザーを切り替え",
+            key="main_page_user_switch_conform",
+        )
+        if bt:
+            translator.switch_user(selected_user)
+            st.success(f"【{selected_user}】に切り替えました")
+            st.balloons()
+    with col2:
+        st.subheader("ユーザーの新規追加")
+        new_user_name = st.text_input("新しいユーザー名を登録してください")
+
+        if new_user_name in userman.user_id_list:
+            st.error("同じユーザーが既に存在します")
+        else:
+            bt = st.button(
+                f"ユーザーを作成",
+                key="main_page_create_conform",
+            )
+            if bt:
+                translator.switch_user(new_user_name)
+                st.success(f"【{new_user_name}】を作成しました。")
+                st.success(f"【{new_user_name}】に切り替えました。")
+                st.balloons()
+
 
 
 if __name__ == "__main__":
     print(
         "[system-message] ------------------------main function called------------------------"
     )
+    userman, login_id = translator.get_user_id_manager()
+    del login_id
+    translator.switch_user(userman.current_user)
     main_page()
