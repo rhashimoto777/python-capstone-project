@@ -49,10 +49,10 @@ def main_page():
 
 
 if __name__ == "__main__":
+    userman, login_id = translator.get_user_id_manager()
     print(
         "[system-message] ------------------------main function called------------------------"
     )
-    userman, login_id = translator.get_user_id_manager()
     del login_id
     translator.switch_user(userman.current_user)
     main_page()

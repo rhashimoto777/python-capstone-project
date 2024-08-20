@@ -44,8 +44,9 @@ class BackEndOperator(Singleton):
 
     # ********************* global関数群 *********************
     def switch_user(self, user_id=common.USER_DEFAULT):
-        common.update()
-        self.__pull_data
+        common.update(user_id)
+        self.db_operator.refresh()
+        self.__pull_data()
         return
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
