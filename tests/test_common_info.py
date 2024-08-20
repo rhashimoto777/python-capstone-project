@@ -98,7 +98,7 @@ def test_init_01():
     """
     common.init()
     all_global_are_not_initial()
-    assert common.USER_ID == "user_default"
+    assert common.USER_ID == common.USER_DEFAULT
 
 
 def test_init_02():

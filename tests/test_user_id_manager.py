@@ -1,4 +1,6 @@
 import pytest
+
+from src.backend_app import common_info as common
 from src.backend_app import user_id_manager as uim
 
 
@@ -16,7 +18,7 @@ def setup_and_teardown():
 def test_init(setup_and_teardown):
     user_id_mananger = setup_and_teardown
     assert len(user_id_mananger.user_id_list) >= 2
-    assert "user_default" in user_id_mananger.user_id_list
+    assert common.USER_DEFAULT in user_id_mananger.user_id_list
     assert "_PYTEST_" in user_id_mananger.user_id_list
     return
 

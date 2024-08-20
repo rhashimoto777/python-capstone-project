@@ -31,7 +31,7 @@ class Singleton(object):
 
 # ________________________________________________________________________________________________________________________
 class BackEndOperator(Singleton):
-    def __init__(self, user_id="user_default"):
+    def __init__(self, user_id=common.USER_DEFAULT):
         util.backend_system_msg(
             f"********** Generating Backend Instance (used_id = {user_id}) ********"
         )
@@ -43,7 +43,7 @@ class BackEndOperator(Singleton):
         return
 
     # ********************* global関数群 *********************
-    def switch_user(self, user_id="user_default"):
+    def switch_user(self, user_id=common.USER_DEFAULT):
         common.update()
         self.__pull_data
         return

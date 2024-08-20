@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 from src import backend_main
+from src.backend_app import common_info as common
 from src.backend_app import data_analysis as anly
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
@@ -13,7 +14,7 @@ backend_op = backend_main.BackEndOperator()
 INIT_FINISH = False
 
 
-def init(user_id="user_default"):
+def init(user_id=common.USER_DEFAULT):
     """
     BackEndOperatorのインスタンス生成時にユーザー情報を渡せるよう、インスタンス生成処理を関数に分けて外から呼び出せるようにする。
     起動時に1回しか呼ばれないことを想定し、一度実行されたら二度目以降は何もしない。
@@ -25,7 +26,7 @@ def init(user_id="user_default"):
     return
 
 
-def switch_user(user_id="user_default"):
+def switch_user(user_id=common.USER_DEFAULT):
     backend_op.switch_user(user_id)
     return
 

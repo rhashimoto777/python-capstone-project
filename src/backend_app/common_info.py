@@ -3,7 +3,10 @@ from pathlib import Path
 
 from src import util
 
-# バックエンド内で参照するpath・ファイル名
+# 固定の値
+USER_DEFAULT = "user_default"
+
+# 変動する値
 ROOT_DIR = None
 USER_LIST_DIR = None
 CURRENT_USER_FILE_DIR = None
@@ -21,7 +24,7 @@ INIT_FINISH = False
 # global関数
 
 
-def init(user_id="user_default"):
+def init(user_id=USER_DEFAULT):
     """
     初回起動時の処理。
     pytest用に様々な場所から呼ぶため、既に計算している場合はskipする。
@@ -37,7 +40,7 @@ def init(user_id="user_default"):
     return
 
 
-def update(user_id="user_default"):
+def update(user_id=USER_DEFAULT):
     global USER_ID, INIT_FINISH
     if user_id == USER_ID:
         return

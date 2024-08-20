@@ -1,6 +1,7 @@
-from src.backend_app import common_info as common
-from pathlib import Path
 import os
+from pathlib import Path
+
+from src.backend_app import common_info as common
 
 
 class UserIdManager:
@@ -11,7 +12,7 @@ class UserIdManager:
         self.__update()
         return
 
-    def overwrite_current_user(self, user_id="user_default"):
+    def overwrite_current_user(self, user_id=common.USER_DEFAULT):
         fpath = os.path.join(common.CURRENT_USER_FILE_DIR, common.CURRENT_USER_FILENAME)
         exist = Path(fpath).is_file()
         if exist:
@@ -38,4 +39,4 @@ class UserIdManager:
             with open(fpath, "r", encoding="utf-8") as file:
                 userid = str(file.read())
                 return userid
-        return "user_default"
+        return common.USER_DEFAULT
