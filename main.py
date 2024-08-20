@@ -16,7 +16,7 @@ def main_page():
     # translatorクラス内でBackEndOperatorのインスタンスを生成する。
     # この時点でuser_idを渡し、ユーザーIDごとのDBを呼び出す。（何も指定しなければuser_default）
     # ************************************
-    translator.init()
+    translator.switch_user()
 
     # ************************************
     # frontend内でtranslator-APIを使う処理は必ず translator.init() を実行した後で行うこと。

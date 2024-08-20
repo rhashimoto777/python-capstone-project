@@ -16,7 +16,7 @@ def pytest_configure(config):
     """
     # pytest用のDataBaseに切り替える
     user_id = "_PYTEST_"
-    translator.init(user_id)
+    translator.switch_user(user_id)
 
     # pytest用のDataBaseを使うことを通知
     __line_separator()

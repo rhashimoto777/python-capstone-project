@@ -11,19 +11,6 @@ from src.util import g_to_kcal
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
 backend_op = backend_main.BackEndOperator()
-INIT_FINISH = False
-
-
-def init(user_id=common.USER_DEFAULT):
-    """
-    BackEndOperatorのインスタンス生成時にユーザー情報を渡せるよう、インスタンス生成処理を関数に分けて外から呼び出せるようにする。
-    起動時に1回しか呼ばれないことを想定し、一度実行されたら二度目以降は何もしない。
-    """
-    global backend_op, INIT_FINISH
-    if not INIT_FINISH:
-        backend_op = backend_main.BackEndOperator(user_id)
-        INIT_FINISH = True
-    return
 
 
 def switch_user(user_id=common.USER_DEFAULT):
