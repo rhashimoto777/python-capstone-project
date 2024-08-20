@@ -111,18 +111,3 @@ def _memorize_user_id(user_id):
     user_id = str(user_id)
     USER_ID = user_id.replace(" ", "_")
     return
-
-
-# ________________________________________________________________________________________________________________________
-if __name__ == "__main__":
-    """
-    中身閲覧用
-    """
-    init()
-    print(f"ROOT_PATH              = {ROOT_DIR}")
-    print(f"DB_PATH                = {DB_DIR}")
-    print(f"DB_FILENAME            = {DB_FILENAME}")
-    print(f"FOODDATA_JSON_PATH     = {FOODDATA_JSON_DIR}")
-    print(f"FOODDATA_JSON_FILENAME = {FOODDATA_JSON_FILENAME}")
-    print(f"USER_ID                = {USER_ID}")
-    print(f"INIT_FINISH            = {INIT_FINISH}")

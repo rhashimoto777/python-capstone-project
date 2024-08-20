@@ -9,6 +9,8 @@ def setup_and_teardown():
     ROOT_PATH = common.ROOT_DIR
     DB_PATH = common.DB_DIR
     USER_PATH = common.USER_LIST_DIR
+    CURRENT_USER_FILE_DIR = common.CURRENT_USER_FILE_DIR
+    CURRENT_USER_FILENAME = common.CURRENT_USER_FILENAME
     DB_FILENAME = common.DB_FILENAME
     DB_BACKUP_FILENAME = common.DB_BACKUP_FILENAME
     FOODDATA_JSON_PATH = common.FOODDATA_JSON_DIR
@@ -25,6 +27,8 @@ def setup_and_teardown():
     # テスト後に元の値に戻す
     common.ROOT_DIR = ROOT_PATH
     common.USER_LIST_DIR = USER_PATH
+    common.CURRENT_USER_FILE_DIR = CURRENT_USER_FILE_DIR
+    common.CURRENT_USER_FILENAME = CURRENT_USER_FILENAME
     common.DB_DIR = DB_PATH
     common.DB_FILENAME = DB_FILENAME
     common.DB_BACKUP_FILENAME = DB_BACKUP_FILENAME
@@ -40,6 +44,8 @@ def all_global_are_initial():
     """
     assert common.ROOT_DIR is None
     assert common.USER_LIST_DIR is None
+    assert common.CURRENT_USER_FILE_DIR is None
+    assert common.CURRENT_USER_FILENAME is None
     assert common.DB_DIR is None
     assert common.DB_FILENAME is None
     assert common.DB_BACKUP_FILENAME is None
@@ -56,6 +62,8 @@ def all_global_are_not_initial():
     """
     assert common.ROOT_DIR is not None
     assert common.USER_LIST_DIR is not None
+    assert common.CURRENT_USER_FILE_DIR is not None
+    assert common.CURRENT_USER_FILENAME is not None
     assert common.DB_DIR is not None
     assert common.DB_FILENAME is not None
     assert common.DB_BACKUP_FILENAME is not None
@@ -72,6 +80,8 @@ def return_to_initial():
     """
     common.ROOT_DIR = None
     common.USER_LIST_DIR = None
+    common.CURRENT_USER_FILE_DIR = None
+    common.CURRENT_USER_FILENAME = None
     common.DB_DIR = None
     common.DB_FILENAME = None
     common.DB_BACKUP_FILENAME = None

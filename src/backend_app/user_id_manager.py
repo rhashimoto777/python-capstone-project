@@ -35,7 +35,7 @@ class UserIdManager:
         self.current_user = self.__get_latest_user()
         return
 
-    def __get_user_id_list():
+    def __get_user_id_list(self):
         return [p.name for p in Path(common.USER_LIST_DIR).iterdir() if p.is_dir()]
 
     def __get_latest_user(self):
