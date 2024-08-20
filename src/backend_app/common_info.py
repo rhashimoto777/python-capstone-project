@@ -93,7 +93,7 @@ def _gen_db_user_path_and_name(user_id):
     global DB_BACKUP_FILENAME
 
     CURRENT_USER_FILE_DIR = os.path.join(ROOT_DIR, "data")
-    CURRENT_USER_FILENAME = "current_user.json"
+    CURRENT_USER_FILENAME = "current_user.txt"
 
     USER_LIST_DIR = os.path.join(ROOT_DIR, "data", "users")
     DB_DIR = os.path.join(USER_LIST_DIR, user_id)
