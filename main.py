@@ -45,7 +45,7 @@ def main_page():
             st.error("同じユーザーが既に存在します")
         else:
             bt = st.button(
-                f"ユーザーを作成",
+                "ユーザーを作成",
                 key="main_page_create_conform",
             )
             if bt:
