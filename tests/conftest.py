@@ -50,11 +50,18 @@ def pytest_sessionfinish(session, exitstatus):
     """
     全てのテストが終了した後に実行されるteardown処理
     """
+    print("\n")
+    __line_separator()
     __msg_print("全てのテストを終了しました。teardown処理を実行します。")
+    __line_separator()
+
     global ORIGINAL_CURRENT_USER
     translator.switch_user(ORIGINAL_CURRENT_USER)
     userman = user_id_manager.UserIdManager()
     __msg_print(f"user_id = {userman.current_user} に戻しました。")
+
+    __line_separator()
+    __msg_print("teardown処理を終了します")
     return
 
 

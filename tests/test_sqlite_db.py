@@ -2,7 +2,6 @@ import pandas as pd
 import pytest
 
 from src.backend_app import sqlite_db
-from src.datatype.my_struct import RawDataFrame
 
 
 def test_get_raw_df():

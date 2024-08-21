@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 
 from src.backend_app import common_info as common
@@ -5,7 +7,7 @@ from src.backend_app import user_id_manager as uim
 
 
 @pytest.fixture(autouse=True)
-def setup_and_teardown():
+def setup_and_teardown() -> Generator[uim.UserIdManager, None, None]:
     uim_instance = uim.UserIdManager()
     current_user = uim_instance.current_user
 

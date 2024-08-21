@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Generator
 
 import pandas as pd
 import pytest
@@ -12,7 +13,7 @@ from tests import test_my_struct
 
 
 @pytest.fixture(autouse=True)
-def setup_and_teardown():
+def setup_and_teardown() -> Generator[BackEndOperator, None, None]:
     """
     テストの実行前後でDataBase値が変わらないようにする。
     """
