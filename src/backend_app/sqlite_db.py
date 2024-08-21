@@ -152,8 +152,8 @@ class DataBaseCreator(DataBaseCommon):
         self.db_bk_path = os.path.join(common.DB_DIR, common.DB_BACKUP_FILENAME)
 
         # 「DataBaseの本ファイル」「DataBaseのBackupファイル」が存在するかを判定
-        self.is_db_exist: bool = os.path.exists(self.db_path)
-        self.is_db_bk_exist: bool = os.path.exists(self.db_bk_path)
+        self.is_db_exist = os.path.exists(self.db_path)
+        self.is_db_bk_exist = os.path.exists(self.db_bk_path)
 
         if not self.is_db_exist:
             if self.is_db_bk_exist:

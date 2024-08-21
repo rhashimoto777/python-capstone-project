@@ -17,7 +17,7 @@ def test_get_raw_df():
 
     # *********** 対象関数の実行 ***********
     try:
-        raw_df: RawDataFrame = op.get_raw_df()
+        raw_df = op.get_raw_df()
     except Exception as e:
         pytest.fail(f"get_raw_df()の実行に失敗しました : {e}")
 
