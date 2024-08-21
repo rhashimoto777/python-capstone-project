@@ -1,28 +1,30 @@
 from datetime import datetime
+from typing import Tuple
 
 import pandas as pd
 
 from src import backend_main
+from src.backend_app import common_info as common
 from src.backend_app import data_analysis as anly
+from src.backend_app import user_id_manager
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
-from src.util import g_to_kcal
+from src.util import backend_system_msg, g_to_kcal
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
-backend_op = None  # BackEndOperatorのインスタンスで上書きする。
-INIT_FINISH = False
+backend_system_msg("translator.py initialization")
+backend_op = backend_main.BackEndOperator()
+userman = user_id_manager.UserIdManager()
 
 
-def init(user_id="user_default"):
-    """
-    BackEndOperatorのインスタンス生成時にユーザー情報を渡せるよう、インスタンス生成処理を関数に分けて外から呼び出せるようにする。
-    起動時に1回しか呼ばれないことを想定し、一度実行されたら二度目以降は何もしない。
-    """
-    global backend_op, INIT_FINISH
-    if not INIT_FINISH:
-        backend_op = backend_main.BackEndOperator(user_id)
-        INIT_FINISH = True
+def switch_user(user_id=common.USER_DEFAULT):
+    backend_op.switch_user(user_id)
+    userman.switch_user(common.USER_ID)
     return
+
+
+def get_user_id_manager() -> Tuple[user_id_manager.UserIdManager, str]:
+    return userman, common.USER_ID
 
 
 # _______________________________________________________________________

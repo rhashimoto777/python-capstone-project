@@ -175,7 +175,7 @@ def _tentative_gen_json():
         }
     )
 
-    os.chdir(common.FOODDATA_JSON_PATH)
+    os.chdir(common.FOODDATA_JSON_DIR)
     with open(common.FOODDATA_JSON_FILENAME, "w", encoding="utf-8") as file:
         json.dump(d, file, ensure_ascii=False, indent=4, sort_keys=True)
     return

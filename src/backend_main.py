@@ -31,7 +31,7 @@ class Singleton(object):
 
 # ________________________________________________________________________________________________________________________
 class BackEndOperator(Singleton):
-    def __init__(self, user_id="user_default"):
+    def __init__(self, user_id=common.USER_DEFAULT):
         util.backend_system_msg(
             f"********** Generating Backend Instance (used_id = {user_id}) ********"
         )
@@ -40,8 +40,17 @@ class BackEndOperator(Singleton):
         self.raw_df = None
         self.cooking_info_list = None
         self.__pull_data()
+        return
 
     # ********************* global関数群 *********************
+    def switch_user(self, user_id=common.USER_DEFAULT):
+        util.backend_system_msg(
+            f"********** Switch User (used_id = {user_id}) ********"
+        )
+        common.update(user_id)
+        self.db_operator.refresh()
+        self.__pull_data()
+        return
 
     def register_new_cooking(self, cooking_info: myst.CookingInfo) -> None:
         existing = anly.find_same_cooking(self.cooking_info_list, cooking_info)
