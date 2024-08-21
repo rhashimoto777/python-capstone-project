@@ -3,6 +3,7 @@ import sys
 
 from src import translator
 from src.backend_app import common_info as common
+from src.backend_app import user_id_manager
 
 # プロジェクトのルートディレクトリを追加
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -17,8 +18,8 @@ def pytest_configure(config):
     """
     # 最後にログインしていたユーザーをバックアップ
     global ORIGINAL_CURRENT_USER
-    userman, ORIGINAL_CURRENT_USER = translator.get_user_id_manager()
-    del userman
+    userman = user_id_manager.UserIdManager()
+    ORIGINAL_CURRENT_USER = userman.current_user
 
     # pytest用のDataBaseに切り替える
     user_id = "_PYTEST_"
@@ -26,6 +27,7 @@ def pytest_configure(config):
 
     # pytest用のDataBaseを使うことを通知
     __line_separator()
+    __msg_print(f"元々の最終利用ユーザーは、user_id = {ORIGINAL_CURRENT_USER} です。")
     __msg_print(f"pytest用のDataBaseを使用します。(user_id = {user_id})")
 
     # 前回のpytestの実行内容で影響を受けないよう、pytestを実行する度にDataBaseをバックアップから復元する。
@@ -51,9 +53,8 @@ def pytest_sessionfinish(session, exitstatus):
     __msg_print("全てのテストを終了しました。teardown処理を実行します。")
     global ORIGINAL_CURRENT_USER
     translator.switch_user(ORIGINAL_CURRENT_USER)
-    userman, current_user = translator.get_user_id_manager()
-    del userman
-    __msg_print(f"user id【{current_user}】に戻しました。")
+    userman = user_id_manager.UserIdManager()
+    __msg_print(f"user_id = {userman.current_user} に戻しました。")
     return
 
 

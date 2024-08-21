@@ -55,6 +55,7 @@ def main_page():
                 st.balloons()
 
     userman, login_id = translator.get_user_id_manager()
+    login_id = login_id.replace("_", "\\_")
     st.header(f"... 現在ログインしているユーザーは【{login_id}】です")
     return
 
@@ -62,7 +63,7 @@ def main_page():
 if __name__ == "__main__":
     userman, login_id = translator.get_user_id_manager()
     print(
-        "[system-message] ------------------------main function called------------------------"
+        "\n[system-message] ------------------------main function called------------------------"
     )
     del login_id
     translator.switch_user(userman.current_user)
