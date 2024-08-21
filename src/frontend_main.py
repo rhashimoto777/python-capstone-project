@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src import translator
+from src.backend_app import save_user_selection as tmp_json_tool
 
 user_food_select = None
 
@@ -59,11 +60,27 @@ def choice_food():
     # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
     food_options = df_fooddata["FoodName"].unique().tolist()
     # 食材を複数選択
-    st.subheader("食材を選んでください")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("食材を選んでください")
+    with col2:
+        last_select = tmp_json_tool.restore("choice_food")
+        default_food_sel = None
+        default_quantity_sel = None
+
+        if last_select is not None:
+            if len(last_select["FoodName"]) > 0 or len(last_select["Quantity"]) > 0:
+                bt_restore = st.button(
+                    "前回の選択内容を復元", key="cho_foo_res_last_sel"
+                )
+                if bt_restore:
+                    default_food_sel = last_select["FoodName"]
+                    default_quantity_sel = last_select["Quantity"]
+
     selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
-        selected_foods = st.multiselect("", food_options)
+        selected_foods = st.multiselect("", food_options, default_food_sel)
 
         # 食材に対する数量を入力
         user_food_select = []
@@ -72,7 +89,9 @@ def choice_food():
         total_fat = 0
         total_carbs = 0
 
-        for food_name in selected_foods:
+        quantity_list = []
+
+        for i, food_name in enumerate(selected_foods):
             map = df_fooddata["FoodName"] == food_name
             dict = {}
             dict["f_name"] = food_name
@@ -81,7 +100,14 @@ def choice_food():
             dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-            quantity = st.number_input(msg, min_value=0.0, value=1.0, step=0.1)
+            default_value = (
+                default_quantity_sel[i] if default_quantity_sel is not None else 1.0
+            )
+            default_value = 1.0
+            quantity = st.number_input(
+                msg, min_value=0.0, value=default_value, step=0.1
+            )
+            quantity_list.append(quantity)
 
             dict["su_quantity"] = quantity
             dict["g"] = quantity * dict["f_su_g"]
@@ -94,6 +120,11 @@ def choice_food():
 
             user_food_select.append(dict)
 
+        if len(selected_foods) > 0 or len(quantity_list):
+            tmp_json_tool.save(
+                key="choice_food",
+                data={"FoodName": selected_foods, "Quantity": quantity_list},
+            )
         ## 選択した食材と個数を表示
         ## st.write("選択した食材と個数を確認:")
         ## for food in user_food_select:
