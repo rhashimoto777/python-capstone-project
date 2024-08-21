@@ -71,11 +71,15 @@ def choice_food():
         if last_select is not None:
             if len(last_select["FoodName"]) > 0 or len(last_select["Quantity"]) > 0:
                 bt_restore = st.button(
-                    "前回の選択内容を復元", key="cho_foo_res_last_sel"
+                    "選択内容を消去", key="cho_foo_res_last_sel"
                 )
-                if bt_restore:
+                if not bt_restore:
                     default_food_sel = last_select["FoodName"]
                     default_quantity_sel = last_select["Quantity"]
+                else:
+                    default_food_sel = None
+                    default_quantity_sel = None
+
 
     selected_foods = []
     col1, col2 = st.columns(2)
@@ -100,10 +104,15 @@ def choice_food():
             dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-            default_value = (
-                default_quantity_sel[i] if default_quantity_sel is not None else 1.0
-            )
+            # default_value = (
+            #     default_quantity_sel[i] if default_quantity_sel is not None else 1.0
+            # )
             default_value = 1.0
+            if default_food_sel is not None:
+                for j, d_food in enumerate(default_food_sel):
+                    if food_name == d_food:
+                        default_value = default_quantity_sel[j]
+                        break
             quantity = st.number_input(
                 msg, min_value=0.0, value=default_value, step=0.1
             )
@@ -120,11 +129,11 @@ def choice_food():
 
             user_food_select.append(dict)
 
-        if len(selected_foods) > 0 or len(quantity_list):
-            tmp_json_tool.save(
-                key="choice_food",
-                data={"FoodName": selected_foods, "Quantity": quantity_list},
-            )
+        # if len(selected_foods) > 0 or len(quantity_list):
+        tmp_json_tool.save(
+            key="choice_food",
+            data={"FoodName": selected_foods, "Quantity": quantity_list},
+        )
         ## 選択した食材と個数を表示
         ## st.write("選択した食材と個数を確認:")
         ## for food in user_food_select:
