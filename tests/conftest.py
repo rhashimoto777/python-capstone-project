@@ -8,12 +8,18 @@ from src.backend_app import common_info as common
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 PREFIX = "........."
+ORIGINAL_CURRENT_USER = None
 
 
 def pytest_configure(config):
     """
     全てのテストの計算よりも先に実行される関数
     """
+    # 最後にログインしていたユーザーをバックアップ
+    global ORIGINAL_CURRENT_USER
+    userman, ORIGINAL_CURRENT_USER = translator.get_user_id_manager()
+    del userman
+
     # pytest用のDataBaseに切り替える
     user_id = "_PYTEST_"
     translator.switch_user(user_id)
@@ -35,6 +41,19 @@ def pytest_configure(config):
     __line_separator()
     __msg_print("pytestの事前処理を完了。pytestを実行します。")
     __line_separator()
+    return
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """
+    全てのテストが終了した後に実行されるteardown処理
+    """
+    __msg_print("全てのテストを終了しました。teardown処理を実行します。")
+    global ORIGINAL_CURRENT_USER
+    translator.switch_user(ORIGINAL_CURRENT_USER)
+    userman, current_user = translator.get_user_id_manager()
+    del userman
+    __msg_print(f"user id【{current_user}】に戻しました。")
     return
 
 
