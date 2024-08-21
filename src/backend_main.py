@@ -44,6 +44,9 @@ class BackEndOperator(Singleton):
 
     # ********************* global関数群 *********************
     def switch_user(self, user_id=common.USER_DEFAULT):
+        util.backend_system_msg(
+            f"********** Switch User (used_id = {user_id}) ********"
+        )
         common.update(user_id)
         self.db_operator.refresh()
         self.__pull_data()

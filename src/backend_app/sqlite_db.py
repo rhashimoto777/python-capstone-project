@@ -40,7 +40,7 @@ class DataBaseOperator(DataBaseCommon):
         common.init()  # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
         self.creator = DataBaseCreator()
         return
-    
+
     def refresh(self) -> None:
         self.creator.refresh()
         return
@@ -144,7 +144,7 @@ class DataBaseCreator(DataBaseCommon):
         common.init()  # pytest用。既にどこかでinit()が呼ばれていれば何もしない。
         self.refresh()
         return
-    
+
     def refresh(self):
 
         # 「DataBaseの本ファイル」「DataBaseのBackupファイル」のPathを取得
@@ -161,7 +161,6 @@ class DataBaseCreator(DataBaseCommon):
             else:
                 self._create_new_db()
         return
-
 
     def delete_db_and_create_new_db(self):
         self.remove_db()

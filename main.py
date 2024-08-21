@@ -1,5 +1,13 @@
-from src import frontend_main, translator
 import streamlit as st
+
+from src import translator
+
+st.set_page_config(
+    page_title="My cooking",
+    page_icon=None,
+    layout="wide",
+    initial_sidebar_state="auto",
+)
 
 
 # ________________________________________________________________________________________________________________________
@@ -12,7 +20,6 @@ def main_page():
     また、この関数が一番最初に実行されるため、各種初回処理を行う。
     """
     userman, login_id = translator.get_user_id_manager()
-    st.title(f"現在【{login_id}】でログインしています")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -22,15 +29,16 @@ def main_page():
 
     if selected_user is not None:
         bt = st.button(
-            "ユーザーを切り替え",
+            "＜ユーザーを切り替える＞",
             key="main_page_user_switch_conform",
         )
         if bt:
             translator.switch_user(selected_user)
             st.success(f"【{selected_user}】に切り替えました")
             st.balloons()
+
     with col2:
-        st.subheader("ユーザーの新規追加")
+        st.subheader("＜ユーザーの新規追加＞")
         new_user_name = st.text_input("新しいユーザー名を登録してください")
 
         if new_user_name in userman.user_id_list:
@@ -46,6 +54,9 @@ def main_page():
                 st.success(f"【{new_user_name}】に切り替えました。")
                 st.balloons()
 
+    userman, login_id = translator.get_user_id_manager()
+    st.header(f"... 現在ログインしているユーザーは【{login_id}】です")
+    return
 
 
 if __name__ == "__main__":

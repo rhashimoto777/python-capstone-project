@@ -14,9 +14,6 @@ class UserIdManager:
 
     def switch_user(self, user_id=common.USER_DEFAULT):
         fpath = os.path.join(common.CURRENT_USER_FILE_DIR, common.CURRENT_USER_FILENAME)
-        # exist = Path(fpath).is_file()
-        # if exist:
-        #     os.remove(fpath)
 
         with open(fpath, "w", encoding="utf-8") as file:
             file.write(user_id)

@@ -1,24 +1,25 @@
 from datetime import datetime
+from typing import Tuple
 
 import pandas as pd
 
 from src import backend_main
 from src.backend_app import common_info as common
 from src.backend_app import data_analysis as anly
+from src.backend_app import user_id_manager
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
-from src.util import g_to_kcal
-from src.backend_app import user_id_manager
-from typing import Tuple
+from src.util import backend_system_msg, g_to_kcal
 
 # classではなくmodule直下にBackEndOperatorのインスタンスを置くことで、確実にインスタンスが1つだけの状態にする。
+backend_system_msg("translator.py initialization")
 backend_op = backend_main.BackEndOperator()
 userman = user_id_manager.UserIdManager()
 
 
 def switch_user(user_id=common.USER_DEFAULT):
     backend_op.switch_user(user_id)
-    userman.switch_user(user_id)
+    userman.switch_user(common.USER_ID)
     return
 
 

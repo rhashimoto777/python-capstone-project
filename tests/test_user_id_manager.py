@@ -25,9 +25,14 @@ def test_init(setup_and_teardown):
 
 def test_switch_user(setup_and_teardown):
     user_id_mananger: uim.UserIdManager = setup_and_teardown
-    sample_id = "sample_test_for_ocu"
-    assert sample_id not in user_id_mananger.user_id_list
 
+    sample_id = "sample_test_for_ocu_01"
+    assert sample_id not in user_id_mananger.user_id_list
+    user_id_mananger.switch_user(sample_id)
+    assert sample_id == user_id_mananger.current_user
+
+    sample_id = "sample_test_for_ocu_02"
+    assert sample_id not in user_id_mananger.user_id_list
     user_id_mananger.switch_user(sample_id)
     assert sample_id == user_id_mananger.current_user
     return
