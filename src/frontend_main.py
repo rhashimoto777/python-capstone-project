@@ -8,8 +8,6 @@ import streamlit as st
 from src import translator
 from src.backend_app import save_user_selection as tmp_json_tool
 
-user_food_select = None
-
 
 def show_cookings_registered():
     """
@@ -52,13 +50,8 @@ def show_refrigerator_fooddata():
     return
 
 
-def choice_food():
-    global user_food_select
-    # セッションステートの初期化
-    df_fooddata = translator.get_df_fooddata()
-
-    # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
-    food_options = df_fooddata["FoodName"].unique().tolist()
+def resister_cooking():
+    # ******************** 食材の種類・数の入力 ********************
     # 食材を複数選択
     col1, col2 = st.columns(2)
     with col1:
@@ -77,13 +70,15 @@ def choice_food():
     selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
+        df_fooddata = translator.get_df_fooddata()
+
+        # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
+        food_options = df_fooddata["FoodName"].unique().tolist()
+
         # 食材の選択
         selected_foods = st.multiselect(
             "", food_options, default_sel_food, label_visibility="collapsed"
         )
-
-        # sessionstateとjsonに選択内容を保存
-        st.session_state.default_sel_food = selected_foods
 
         # 食材に対する数量を入力
         user_food_select = []
@@ -135,7 +130,7 @@ def choice_food():
             total_carbs += quantity * df_fooddata.loc[map, "Grams_Carbo"].values[0]
 
             user_food_select.append(dict)
-        
+
         bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
         if bt_save:
             tmp_json_tool.save(
@@ -162,12 +157,8 @@ def choice_food():
             # st.write("PFCバランス:")
             st.plotly_chart(fig)
             st.write(f"総カロリー: {total_kcal:.2f} kcal")
-    return
 
-
-def resister_cooking():
-    # 料理名・説明・お気に入り登録
-    # st.header("【新しい料理を登録】")
+    # ******************** 料理名の入力 ********************
     st.subheader("新しい料理の料理名を教えてください")
     c_name = st.text_input("")
     st.subheader("説明")
