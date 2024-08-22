@@ -1,5 +1,9 @@
 # プロジェクトの詳細
 
+# 修了プロジェクトのプレゼンテーション
+  
+  - [Confluenceページを参照](https://rhdojo.atlassian.net/wiki/spaces/~712020ca0f8221407b440b8d4c1a0660e8be32/pages/26050562)
+
 <details>
 <summary>【全テーマ共通】</summary>
 
