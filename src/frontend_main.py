@@ -58,6 +58,16 @@ def resister_cooking():
     default_sel_cname = None
     default_sel_desc = None
     default_sel_is_favorite = False
+    if not hasattr(st.session_state, "default_sel_food"):
+        st.session_state.default_sel_food = default_sel_food
+    if not hasattr(st.session_state, "default_sel_quantity"):
+        st.session_state.default_sel_quantity = default_sel_quantity
+    if not hasattr(st.session_state, "default_sel_cname"):
+        st.session_state.default_sel_cname = default_sel_cname
+    if not hasattr(st.session_state, "default_sel_desc"):
+        st.session_state.default_sel_desc = default_sel_desc
+    if not hasattr(st.session_state, "default_sel_is_favorite"):
+        st.session_state.default_sel_is_favorite = default_sel_is_favorite
 
     # ******************** 食材の種類・数の入力 ********************
     # 食材を複数選択
@@ -66,6 +76,9 @@ def resister_cooking():
         st.subheader("食材を選んでください")
     with col2:
         # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
+        tg_restore_mode = st.toggle(
+            "復元情報から編集可能にする", key="cho_foo_res_last_sel_mode"
+        )
         bt_restore = st.button("一時保存から復元", key="cho_foo_res_last_sel")
         if bt_restore:
             default_sel_food = save_user_select_instance.restore("regis_c_food_name")
@@ -79,6 +92,13 @@ def resister_cooking():
             )
             if default_sel_quantity is None:
                 default_sel_quantity = {}
+        else:
+            if tg_restore_mode:
+                default_sel_food = st.session_state.default_sel_food
+                default_sel_quantity = st.session_state.default_sel_quantity
+                default_sel_cname = st.session_state.default_sel_cname
+                default_sel_desc = st.session_state.default_sel_desc
+                default_sel_is_favorite = st.session_state.default_sel_is_favorite
 
     selected_foods = []
     col1, col2 = st.columns(2)
@@ -89,9 +109,10 @@ def resister_cooking():
         food_options = df_fooddata["FoodName"].unique().tolist()
 
         # 食材の選択
-        selected_foods = st.multiselect(
+        st.session_state.default_sel_food = st.multiselect(
             "", food_options, default_sel_food, label_visibility="collapsed"
         )
+        selected_foods = st.session_state.default_sel_food
 
         # 食材に対する数量を入力
         user_food_select = []
@@ -117,17 +138,17 @@ def resister_cooking():
 
             # 食材個数を入力
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-            quantity = st.number_input(
+            st.session_state.default_sel_quantity[food_name] = st.number_input(
                 msg,
                 min_value=0.0,
                 value=default_value,
                 step=0.1,
                 label_visibility="collapsed",
             )
+            quantity = st.session_state.default_sel_quantity[food_name]
 
-            # sessionstateとjsonに選択内容を保存
-            default_sel_quantity[food_name] = quantity
-            st.session_state.default_sel_quantity = default_sel_quantity
+            # # 実際に選択された内容を保存
+            # default_sel_quantity[food_name] = quantity
 
             # 前回選択内容をリストに保存
             quantity_list.append(quantity)
@@ -162,36 +183,39 @@ def resister_cooking():
 
     # ******************** 料理名の入力 ********************
     st.subheader("新しい料理の料理名を教えてください")
-    c_name = st.text_input("", value=default_sel_cname)
+    st.session_state.default_sel_cname = st.text_input("", value=default_sel_cname)
 
     st.subheader("説明")
-    c_desc = st.text_area("", value=default_sel_desc)
+    st.session_state.default_sel_desc = st.text_area("", value=default_sel_desc)
 
     st.subheader("お気に入り登録")
-    is_favorite = st.toggle("", value=default_sel_is_favorite)
+    st.session_state.default_sel_is_favorite = st.toggle(
+        "", value=default_sel_is_favorite
+    )
 
     # ******************** 「一時保存登録」ボタン ********************
+
     bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
     if bt_save:
         save_user_select_instance.save(
             key="regis_c_food_name",
-            data=selected_foods,
+            data=st.session_state.default_sel_food,
         )
         save_user_select_instance.save(
             key="regis_c_food_fquantity",
-            data=default_sel_quantity,
+            data=st.session_state.default_sel_quantity,
         )
         save_user_select_instance.save(
             key="regis_c_name",
-            data=c_name,
+            data=st.session_state.default_sel_cname,
         )
         save_user_select_instance.save(
             key="regis_c_desc",
-            data=c_desc,
+            data=st.session_state.default_sel_desc,
         )
         save_user_select_instance.save(
             key="regis_c_desc_is_favorite",
-            data=is_favorite,
+            data=st.session_state.default_sel_is_favorite,
         )
 
     # ******************** 「料理を登録」ボタン ********************
@@ -203,10 +227,10 @@ def resister_cooking():
             food_attribute.append(f_elem)
 
         cooking_info = translator.gen_cooking_info(
-            cooking_name=c_name,
-            is_favorite=is_favorite,
+            cooking_name=st.session_state.default_sel_cname,
+            is_favorite=st.session_state.default_sel_is_favorite,
             last_update_date=datetime.now(),
-            description=c_desc,
+            description=st.session_state.default_sel_desc,
             food_attr=food_attribute,
         )
         if translator.judge_is_new_cooking(cooking_info):
