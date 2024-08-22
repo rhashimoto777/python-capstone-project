@@ -64,15 +64,14 @@ def choice_food():
     with col1:
         st.subheader("食材を選んでください")
     with col2:
+        # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
         last_select = tmp_json_tool.restore("choice_food")
         default_food_sel = None
         default_quantity_sel = None
 
         if last_select is not None:
             if len(last_select["FoodName"]) > 0 or len(last_select["Quantity"]) > 0:
-                bt_restore = st.button(
-                    "選択内容を消去", key="cho_foo_res_last_sel"
-                )
+                bt_restore = st.button("選択内容を消去", key="cho_foo_res_last_sel")
                 if not bt_restore:
                     default_food_sel = last_select["FoodName"]
                     default_quantity_sel = last_select["Quantity"]
@@ -80,10 +79,10 @@ def choice_food():
                     default_food_sel = None
                     default_quantity_sel = None
 
-
     selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
+        # 所在の選択
         selected_foods = st.multiselect("", food_options, default_food_sel)
 
         # 食材に対する数量を入力
@@ -93,9 +92,11 @@ def choice_food():
         total_fat = 0
         total_carbs = 0
 
+        # 前回選択内容を保存するためのリスト
         quantity_list = []
 
-        for i, food_name in enumerate(selected_foods):
+        for food_name in selected_foods:
+            # データの取得
             map = df_fooddata["FoodName"] == food_name
             dict = {}
             dict["f_name"] = food_name
@@ -103,21 +104,24 @@ def choice_food():
             dict["f_su_name"] = df_fooddata.loc[map, "StandardUnit_Name"].values[0]
             dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
-            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-            # default_value = (
-            #     default_quantity_sel[i] if default_quantity_sel is not None else 1.0
-            # )
+            # 食材個数の入力のためのデフォルト値を生成（前回選択内容をロード）
             default_value = 1.0
             if default_food_sel is not None:
                 for j, d_food in enumerate(default_food_sel):
                     if food_name == d_food:
                         default_value = default_quantity_sel[j]
                         break
+
+            # 食材個数を入力
+            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
             quantity = st.number_input(
                 msg, min_value=0.0, value=default_value, step=0.1
             )
+
+            # 前回選択内容をリストに保存
             quantity_list.append(quantity)
 
+            # 選択内容からデータ変換
             dict["su_quantity"] = quantity
             dict["g"] = quantity * dict["f_su_g"]
 

@@ -1,7 +1,8 @@
-from src.backend_app import common_info as common
-import os
 import json
+import os
 from pathlib import Path
+
+from src.backend_app import common_info as common
 
 JSON_DEFAULT_NAME = "user_temporal_selection"
 
