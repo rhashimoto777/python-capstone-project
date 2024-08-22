@@ -15,10 +15,10 @@ with col2:
 
     frontend_main.show_cookings_registered()
 
-    st.header("PFCバランスはこちら")
+    st.subheader("PFCバランスはこちら")
     with st.expander("料理のPFCバランス"):
         frontend_main.show_nutrition_info_of_cooking("02_料理作成")
 
-    st.header("冷蔵庫の食材はこちら")
+    st.subheader("冷蔵庫の食材はこちら")
     with st.expander("冷蔵庫の食材"):
         frontend_main.show_refrigerator_fooddata()
