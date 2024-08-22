@@ -96,6 +96,9 @@ def choice_food():
         # 前回選択内容を保存するためのリスト
         quantity_list = []
 
+        # 前回選択内容を保存するための辞書
+        default_sel_dict = {food: quantity for food, quantity in zip(default_food_sel, default_quantity_sel)}
+
         for food_name in selected_foods:
             # データの取得
             map = df_fooddata["FoodName"] == food_name
@@ -106,12 +109,7 @@ def choice_food():
             dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
             # 食材個数の入力のためのデフォルト値を生成（前回選択内容をロード）
-            default_value = 1.0
-            if default_food_sel is not None:
-                for j, d_food in enumerate(default_food_sel):
-                    if food_name == d_food:
-                        default_value = default_quantity_sel[j]
-                        break
+            default_value = default_sel_dict.get(food_name, 1.0)
 
             # 食材個数を入力
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
