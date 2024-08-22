@@ -260,6 +260,7 @@ def start_cooking():
     """
     ####### データの準備 ######
     df_cooking = translator.get_df_cooking()
+    ck_list = translator.get_cooking_info_list()
 
     ####### ユーザー操作 ######
     # st.header('料理を作りましょう')
@@ -280,10 +281,20 @@ def start_cooking():
         if cooking_id is not None:
             # `cooking_id` が `cooking` テーブルの `CookingID` 列に存在するか確認
             if cooking_id in df_cooking["CookingID"].values:
-                # 存在する場合、料理の履歴を追加
-                translator.add_cooking_history(cooking_id)
-                st.success("料理の履歴が追加されました。")
-                st.balloons()
+                is_possible_to_cook = all(
+                    [
+                        ck.is_present_in_refrigerator
+                        for ck in ck_list.cookings
+                        if ck.cooking_id == cooking_id
+                    ]
+                )
+                # 料理の履歴を追加
+                if is_possible_to_cook:
+                    translator.add_cooking_history(cooking_id)
+                    st.success("料理の履歴が追加されました。")
+                    st.balloons()
+                else:
+                    st.error("冷蔵庫に食材が足りません。")
             else:
                 # 存在しない場合、エラーメッセージを表示
                 st.error("指定されたCookingIDは登録されていません。")
