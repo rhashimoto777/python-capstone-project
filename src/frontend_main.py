@@ -51,6 +51,11 @@ def show_refrigerator_fooddata():
 
 
 def resister_cooking():
+    
+    # ******************** 前回選択内容の値準備 ********************
+    default_sel_food = None
+    default_sel_quantity = {}
+
     # ******************** 食材の種類・数の入力 ********************
     # 食材を複数選択
     col1, col2 = st.columns(2)
@@ -58,8 +63,6 @@ def resister_cooking():
         st.subheader("食材を選んでください")
     with col2:
         # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
-        default_sel_food = None
-        default_sel_quantity = {}
         bt_restore = st.button("一時保存から復元", key="cho_foo_res_last_sel")
         if bt_restore:
             default_sel_food = tmp_json_tool.restore("choice_food_fname")
