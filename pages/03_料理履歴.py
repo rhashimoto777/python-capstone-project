@@ -20,17 +20,5 @@ st.markdown(
 
 st.title("【料理履歴】")
 
-tab1, tab2, tab3 = st.tabs(["料理一覧", "PFCバランス", "カロリー摂取"])
-
-with tab1:
-    st.subheader("料理一覧")
-    frontend_main.show_cookinghistory_registered()
-
-with tab2:
-    st.subheader("PFCバランス")
-    frontend_main.show_nutrition_info_of_cooking("03_料理履歴")
-
-with tab3:
-    st.subheader("カロリー摂取")
-    with st.expander("None"):
-        frontend_main.show_refrigerator_fooddata()
+st.subheader("料理一覧")
+frontend_main.show_cookinghistory_registered()
