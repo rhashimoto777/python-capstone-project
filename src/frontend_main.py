@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src import translator
-from src.backend_app import save_user_selection as tmp_json_tool
 
 
 def show_cookings_registered():
@@ -53,6 +52,7 @@ def show_refrigerator_fooddata():
 def resister_cooking():
 
     # ******************** 前回選択内容の値準備 ********************
+    save_user_select_instance = translator.get_save_user_selection_instance()
     default_sel_food = None
     default_sel_quantity = {}
     default_sel_cname = None
@@ -68,11 +68,15 @@ def resister_cooking():
         # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
         bt_restore = st.button("一時保存から復元", key="cho_foo_res_last_sel")
         if bt_restore:
-            default_sel_food = tmp_json_tool.restore("regis_c_food_name")
-            default_sel_quantity = tmp_json_tool.restore("regis_c_food_fquantity")
-            default_sel_cname = tmp_json_tool.restore("regis_c_name")
-            default_sel_desc = tmp_json_tool.restore("regis_c_desc")
-            default_sel_is_favorite = tmp_json_tool.restore("regis_c_desc_is_favorite")
+            default_sel_food = save_user_select_instance.restore("regis_c_food_name")
+            default_sel_quantity = save_user_select_instance.restore(
+                "regis_c_food_fquantity"
+            )
+            default_sel_cname = save_user_select_instance.restore("regis_c_name")
+            default_sel_desc = save_user_select_instance.restore("regis_c_desc")
+            default_sel_is_favorite = save_user_select_instance.restore(
+                "regis_c_desc_is_favorite"
+            )
             if default_sel_quantity is None:
                 default_sel_quantity = {}
 
@@ -169,23 +173,23 @@ def resister_cooking():
     # ******************** 「一時保存登録」ボタン ********************
     bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
     if bt_save:
-        tmp_json_tool.save(
+        save_user_select_instance.save(
             key="regis_c_food_name",
             data=selected_foods,
         )
-        tmp_json_tool.save(
+        save_user_select_instance.save(
             key="regis_c_food_fquantity",
             data=default_sel_quantity,
         )
-        tmp_json_tool.save(
+        save_user_select_instance.save(
             key="regis_c_name",
             data=c_name,
         )
-        tmp_json_tool.save(
+        save_user_select_instance.save(
             key="regis_c_desc",
             data=c_desc,
         )
-        tmp_json_tool.save(
+        save_user_select_instance.save(
             key="regis_c_desc_is_favorite",
             data=is_favorite,
         )

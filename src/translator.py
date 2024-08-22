@@ -6,7 +6,7 @@ import pandas as pd
 from src import backend_main
 from src.backend_app import common_info as common
 from src.backend_app import data_analysis as anly
-from src.backend_app import user_id_manager
+from src.backend_app import save_user_selection, user_id_manager
 from src.datatype import my_struct as myst
 from src.datatype.my_enum import PFC, TableName
 from src.util import backend_system_msg, g_to_kcal
@@ -25,6 +25,10 @@ def switch_user(user_id=common.USER_DEFAULT):
 
 def get_user_id_manager() -> Tuple[user_id_manager.UserIdManager, str]:
     return userman, common.USER_ID
+
+
+def get_save_user_selection_instance() -> save_user_selection.SaveUserSelection:
+    return save_user_selection.SaveUserSelection()
 
 
 # _______________________________________________________________________
