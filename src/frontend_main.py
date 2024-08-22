@@ -55,8 +55,7 @@ def show_refrigerator_fooddata():
 def choice_food():
     global user_food_select
     df_fooddata = translator.get_df_fooddata()
-    # Streamlitを使って食材選択を表示
-    # st.header("【使う食材と数量を選択】")
+
     # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
     food_options = df_fooddata["FoodName"].unique().tolist()
     # 食材を複数選択
@@ -82,8 +81,10 @@ def choice_food():
     selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
-        # 所在の選択
-        selected_foods = st.multiselect("", food_options, default_food_sel)
+        # 食材の選択
+        selected_foods = st.multiselect(
+            "", food_options, default_food_sel, label_visibility="collapsed"
+        )
 
         # 食材に対する数量を入力
         user_food_select = []
@@ -115,7 +116,11 @@ def choice_food():
             # 食材個数を入力
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
             quantity = st.number_input(
-                msg, min_value=0.0, value=default_value, step=0.1
+                msg,
+                min_value=0.0,
+                value=default_value,
+                step=0.1,
+                label_visibility="collapsed",
             )
 
             # 前回選択内容をリストに保存
@@ -133,27 +138,13 @@ def choice_food():
 
             user_food_select.append(dict)
 
-        # if len(selected_foods) > 0 or len(quantity_list):
+        # jsonに選択内容を保存
         tmp_json_tool.save(
             key="choice_food",
             data={"FoodName": selected_foods, "Quantity": quantity_list},
         )
-        ## 選択した食材と個数を表示
-        ## st.write("選択した食材と個数を確認:")
-        ## for food in user_food_select:
-        ##     msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
-        ##     st.write(msg)
-
-        ## 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
-        ## 合計値を表示
-        ## st.write("選択した食材の総カロリー:")
     with col2:
         if len(selected_foods) > 0:
-
-            ## st.write(f"総タンパク質: {total_protein:.2f} g")
-            ## st.write(f"総脂質: {total_fat:.2f} g")
-            ## st.write(f"総炭水化物: {total_carbs:.2f} g")
-
             # # PFCバランスの円グラフを作成
             fig = go.Figure(
                 data=[
