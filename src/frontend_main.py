@@ -51,10 +51,13 @@ def show_refrigerator_fooddata():
 
 
 def resister_cooking():
-    
+
     # ******************** 前回選択内容の値準備 ********************
     default_sel_food = None
     default_sel_quantity = {}
+    default_sel_cname = None
+    default_sel_desc = None
+    default_sel_is_favorite = False
 
     # ******************** 食材の種類・数の入力 ********************
     # 食材を複数選択
@@ -65,8 +68,11 @@ def resister_cooking():
         # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
         bt_restore = st.button("一時保存から復元", key="cho_foo_res_last_sel")
         if bt_restore:
-            default_sel_food = tmp_json_tool.restore("choice_food_fname")
-            default_sel_quantity = tmp_json_tool.restore("choice_food_fquantity")
+            default_sel_food = tmp_json_tool.restore("regis_c_food_name")
+            default_sel_quantity = tmp_json_tool.restore("regis_c_food_fquantity")
+            default_sel_cname = tmp_json_tool.restore("regis_c_name")
+            default_sel_desc = tmp_json_tool.restore("regis_c_desc")
+            default_sel_is_favorite = tmp_json_tool.restore("regis_c_desc_is_favorite")
             if default_sel_quantity is None:
                 default_sel_quantity = {}
 
@@ -134,17 +140,6 @@ def resister_cooking():
 
             user_food_select.append(dict)
 
-        bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
-        if bt_save:
-            tmp_json_tool.save(
-                key="choice_food_fname",
-                data=selected_foods,
-            )
-            tmp_json_tool.save(
-                key="choice_food_fquantity",
-                data=default_sel_quantity,
-            )
-
     with col2:
         if len(selected_foods) > 0:
             # # PFCバランスの円グラフを作成
@@ -163,13 +158,39 @@ def resister_cooking():
 
     # ******************** 料理名の入力 ********************
     st.subheader("新しい料理の料理名を教えてください")
-    c_name = st.text_input("")
-    st.subheader("説明")
-    c_desc = st.text_area("")
-    st.subheader("お気に入り登録")
-    is_favorite = st.toggle("")
+    c_name = st.text_input("", value=default_sel_cname)
 
-    # 登録ボタン
+    st.subheader("説明")
+    c_desc = st.text_area("", value=default_sel_desc)
+
+    st.subheader("お気に入り登録")
+    is_favorite = st.toggle("", value=default_sel_is_favorite)
+
+    # ******************** 「一時保存登録」ボタン ********************
+    bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
+    if bt_save:
+        tmp_json_tool.save(
+            key="regis_c_food_name",
+            data=selected_foods,
+        )
+        tmp_json_tool.save(
+            key="regis_c_food_fquantity",
+            data=default_sel_quantity,
+        )
+        tmp_json_tool.save(
+            key="regis_c_name",
+            data=c_name,
+        )
+        tmp_json_tool.save(
+            key="regis_c_desc",
+            data=c_desc,
+        )
+        tmp_json_tool.save(
+            key="regis_c_desc_is_favorite",
+            data=is_favorite,
+        )
+
+    # ******************** 「料理を登録」ボタン ********************
     register_btn = st.button("料理を登録")
     if register_btn:
         food_attribute = []
