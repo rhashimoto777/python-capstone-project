@@ -55,12 +55,6 @@ def show_refrigerator_fooddata():
 def choice_food():
     global user_food_select
     # セッションステートの初期化
-    if 'default_sel_food' not in st.session_state or 'default_sel_quantity' not in st.session_state:
-        st.session_state.default_sel_food = tmp_json_tool.restore("choice_food_fname")
-        st.session_state.default_sel_quantity = tmp_json_tool.restore("choice_food_fquantity")
-        if st.session_state.default_sel_quantity is None:
-            st.session_state.default_sel_quantity = {}
-        
     df_fooddata = translator.get_df_fooddata()
 
     # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
@@ -71,15 +65,13 @@ def choice_food():
         st.subheader("食材を選んでください")
     with col2:
         # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
-        default_sel_food = st.session_state.default_sel_food
-        default_sel_quantity = st.session_state.default_sel_quantity
-
-        if (default_sel_food is not None and len(default_sel_food) > 0) or (
-            default_sel_quantity is not  None and len(default_sel_quantity)
-        ):
-            bt_restore = st.button("選択内容を消去", key="cho_foo_res_last_sel")
-            if bt_restore:
-                default_sel_food = None
+        default_sel_food = None
+        default_sel_quantity = {}
+        bt_restore = st.button("一時保存から復元", key="cho_foo_res_last_sel")
+        if bt_restore:
+            default_sel_food = tmp_json_tool.restore("choice_food_fname")
+            default_sel_quantity = tmp_json_tool.restore("choice_food_fquantity")
+            if default_sel_quantity is None:
                 default_sel_quantity = {}
 
     selected_foods = []
@@ -92,10 +84,6 @@ def choice_food():
 
         # sessionstateとjsonに選択内容を保存
         st.session_state.default_sel_food = selected_foods
-        tmp_json_tool.save(
-            key="choice_food_fname",
-            data=selected_foods,
-        )
 
         # 食材に対する数量を入力
         user_food_select = []
@@ -132,10 +120,6 @@ def choice_food():
             # sessionstateとjsonに選択内容を保存
             default_sel_quantity[food_name] = quantity
             st.session_state.default_sel_quantity = default_sel_quantity
-            tmp_json_tool.save(
-                key="choice_food_fquantity",
-                data=default_sel_quantity,
-            )
 
             # 前回選択内容をリストに保存
             quantity_list.append(quantity)
@@ -151,6 +135,17 @@ def choice_food():
             total_carbs += quantity * df_fooddata.loc[map, "Grams_Carbo"].values[0]
 
             user_food_select.append(dict)
+        
+        bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
+        if bt_save:
+            tmp_json_tool.save(
+                key="choice_food_fname",
+                data=selected_foods,
+            )
+            tmp_json_tool.save(
+                key="choice_food_fquantity",
+                data=default_sel_quantity,
+            )
 
     with col2:
         if len(selected_foods) > 0:
