@@ -25,7 +25,7 @@ def restore(key: str):
     return None
 
 
-def __gen_json_full_path(key: str) -> None:
+def __gen_json_full_path(key: str):
     global JSON_DEFAULT_NAME
     json_full_name = f"{JSON_DEFAULT_NAME}_{key}.json"
     return os.path.join(common.DB_DIR, json_full_name)
