@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src import translator
+from src.datatype.my_enum import PFC
+from src.util import g_to_kcal
 
 
 def show_cookings_registered():
@@ -137,7 +139,10 @@ def resister_cooking():
             default_value = default_sel_quantity.get(food_name, 1.0)
 
             # 食材個数を入力
-            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
+            msg = (
+                f'{food_name}の個数（単位 = 「{dict["f_su_name"]}」）を入力してください'
+            )
+            st.caption(msg)
             st.session_state.default_sel_quantity[food_name] = st.number_input(
                 msg,
                 min_value=0.0,
@@ -146,9 +151,6 @@ def resister_cooking():
                 label_visibility="collapsed",
             )
             quantity = st.session_state.default_sel_quantity[food_name]
-
-            # # 実際に選択された内容を保存
-            # default_sel_quantity[food_name] = quantity
 
             # 前回選択内容をリストに保存
             quantity_list.append(quantity)
@@ -177,9 +179,16 @@ def resister_cooking():
                     )
                 ]
             )
-            # st.write("PFCバランス:")
             st.plotly_chart(fig)
-            st.write(f"総カロリー: {total_kcal:.2f} kcal")
+
+            st.markdown(
+                f"""
+                - 【合計カロリー】{total_kcal:.1f}kcal
+                - 【タンパク質(Protein)】{g_to_kcal(total_protein, PFC.Protein):.1f}kcal ({total_protein:.1f}g)
+                - 【脂質(Fat)】{g_to_kcal(total_fat, PFC.Fat):.1f}kcal ({total_fat:.1f}g)
+                - 【炭水化物(Carbohydrate)】{g_to_kcal(total_carbs, PFC.Carbo):.1f}kcal ({total_carbs:.1f}g)
+            """
+            )
 
     # ******************** 料理名の入力 ********************
     st.subheader("新しい料理の料理名を教えてください")
@@ -284,18 +293,19 @@ def start_cooking():
     return
 
 
-def show_nutrition_info_of_cooking(unique_id):
+def show_nutrition_info_of_cooking(unique_id, cooking_info_list=None):
     """
     JIRAチケット「PCPG-13」に対応する、
     『CookingIDごとの「料理の総カロリー」、「PFCそれぞれのグラム量」、「PFCそれぞれのカロリー量」』
     に相当する情報の取得方法とデータ利用方法についてのデモ。
     """
-    cooking_info_list = translator.get_cooking_info_list()
+    if cooking_info_list is None:
+        cooking_info_list = translator.get_cooking_info_list().cookings
 
     # タイトル
     # st.header("食材とPFCバランス")
 
-    for i, ck in enumerate(cooking_info_list.cookings):
+    for i, ck in enumerate(cooking_info_list):
         st.subheader(f"No.{ck.cooking_id} : {ck.cooking_name}")
 
         # DataFrameの作成
@@ -406,5 +416,14 @@ def show_cookinghistory_registered():
     """
 
     st.subheader("過去に作った料理ごとのカロリーとPFCバランス")
-    show_nutrition_info_of_cooking("scr")
+    cooking_info_list_org = translator.get_cooking_info_list()
+    cid_list = df_cookinghistory["CookingID"].to_list()
+
+    cooking_info_list_new = []
+    for cid in cid_list:
+        for ck in cooking_info_list_org.cookings:
+            if ck.cooking_id == cid:
+                cooking_info_list_new.append(ck)
+                break
+    show_nutrition_info_of_cooking("scr", cooking_info_list_new)
     return
