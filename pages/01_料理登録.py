@@ -30,7 +30,6 @@ st.title("【料理登録】")
 col1, col2 = st.columns(2)
 with col1:
 
-    frontend_main.choice_food()
     frontend_main.resister_cooking()
 
 

@@ -6,8 +6,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src import translator
-
-user_food_select = None
+from src.backend_app import save_user_selection as tmp_json_tool
 
 
 def show_cookings_registered():
@@ -51,19 +50,44 @@ def show_refrigerator_fooddata():
     return
 
 
-def choice_food():
-    global user_food_select
-    df_fooddata = translator.get_df_fooddata()
-    # Streamlitを使って食材選択を表示
-    # st.header("【使う食材と数量を選択】")
-    # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
-    food_options = df_fooddata["FoodName"].unique().tolist()
+def resister_cooking():
+
+    # ******************** 前回選択内容の値準備 ********************
+    default_sel_food = None
+    default_sel_quantity = {}
+    default_sel_cname = None
+    default_sel_desc = None
+    default_sel_is_favorite = False
+
+    # ******************** 食材の種類・数の入力 ********************
     # 食材を複数選択
-    st.subheader("食材を選んでください")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("食材を選んでください")
+    with col2:
+        # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
+        bt_restore = st.button("一時保存から復元", key="cho_foo_res_last_sel")
+        if bt_restore:
+            default_sel_food = tmp_json_tool.restore("regis_c_food_name")
+            default_sel_quantity = tmp_json_tool.restore("regis_c_food_fquantity")
+            default_sel_cname = tmp_json_tool.restore("regis_c_name")
+            default_sel_desc = tmp_json_tool.restore("regis_c_desc")
+            default_sel_is_favorite = tmp_json_tool.restore("regis_c_desc_is_favorite")
+            if default_sel_quantity is None:
+                default_sel_quantity = {}
+
     selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
-        selected_foods = st.multiselect("", food_options)
+        df_fooddata = translator.get_df_fooddata()
+
+        # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
+        food_options = df_fooddata["FoodName"].unique().tolist()
+
+        # 食材の選択
+        selected_foods = st.multiselect(
+            "", food_options, default_sel_food, label_visibility="collapsed"
+        )
 
         # 食材に対する数量を入力
         user_food_select = []
@@ -72,7 +96,11 @@ def choice_food():
         total_fat = 0
         total_carbs = 0
 
+        # 前回選択内容を保存するためのリスト
+        quantity_list = []
+
         for food_name in selected_foods:
+            # データの取得
             map = df_fooddata["FoodName"] == food_name
             dict = {}
             dict["f_name"] = food_name
@@ -80,9 +108,27 @@ def choice_food():
             dict["f_su_name"] = df_fooddata.loc[map, "StandardUnit_Name"].values[0]
             dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
-            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
-            quantity = st.number_input(msg, min_value=0.0, value=1.0, step=0.1)
+            # 食材個数の入力のためのデフォルト値を生成（前回選択内容をロード）
+            default_value = default_sel_quantity.get(food_name, 1.0)
 
+            # 食材個数を入力
+            msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
+            quantity = st.number_input(
+                msg,
+                min_value=0.0,
+                value=default_value,
+                step=0.1,
+                label_visibility="collapsed",
+            )
+
+            # sessionstateとjsonに選択内容を保存
+            default_sel_quantity[food_name] = quantity
+            st.session_state.default_sel_quantity = default_sel_quantity
+
+            # 前回選択内容をリストに保存
+            quantity_list.append(quantity)
+
+            # 選択内容からデータ変換
             dict["su_quantity"] = quantity
             dict["g"] = quantity * dict["f_su_g"]
 
@@ -94,22 +140,8 @@ def choice_food():
 
             user_food_select.append(dict)
 
-        ## 選択した食材と個数を表示
-        ## st.write("選択した食材と個数を確認:")
-        ## for food in user_food_select:
-        ##     msg = f'{food["f_name"]}: {food["f_su_name"]} * {food["su_quantity"]} ({food["g"]}g)'
-        ##     st.write(msg)
-
-        ## 料理を編集中の画面でも、編集中の料理の総カロリー等を表示する
-        ## 合計値を表示
-        ## st.write("選択した食材の総カロリー:")
     with col2:
         if len(selected_foods) > 0:
-
-            ## st.write(f"総タンパク質: {total_protein:.2f} g")
-            ## st.write(f"総脂質: {total_fat:.2f} g")
-            ## st.write(f"総炭水化物: {total_carbs:.2f} g")
-
             # # PFCバランスの円グラフを作成
             fig = go.Figure(
                 data=[
@@ -123,20 +155,42 @@ def choice_food():
             # st.write("PFCバランス:")
             st.plotly_chart(fig)
             st.write(f"総カロリー: {total_kcal:.2f} kcal")
-    return
 
-
-def resister_cooking():
-    # 料理名・説明・お気に入り登録
-    # st.header("【新しい料理を登録】")
+    # ******************** 料理名の入力 ********************
     st.subheader("新しい料理の料理名を教えてください")
-    c_name = st.text_input("")
-    st.subheader("説明")
-    c_desc = st.text_area("")
-    st.subheader("お気に入り登録")
-    is_favorite = st.toggle("")
+    c_name = st.text_input("", value=default_sel_cname)
 
-    # 登録ボタン
+    st.subheader("説明")
+    c_desc = st.text_area("", value=default_sel_desc)
+
+    st.subheader("お気に入り登録")
+    is_favorite = st.toggle("", value=default_sel_is_favorite)
+
+    # ******************** 「一時保存登録」ボタン ********************
+    bt_save = st.button("一時保存", key="cho_foo_save_last_sel")
+    if bt_save:
+        tmp_json_tool.save(
+            key="regis_c_food_name",
+            data=selected_foods,
+        )
+        tmp_json_tool.save(
+            key="regis_c_food_fquantity",
+            data=default_sel_quantity,
+        )
+        tmp_json_tool.save(
+            key="regis_c_name",
+            data=c_name,
+        )
+        tmp_json_tool.save(
+            key="regis_c_desc",
+            data=c_desc,
+        )
+        tmp_json_tool.save(
+            key="regis_c_desc_is_favorite",
+            data=is_favorite,
+        )
+
+    # ******************** 「料理を登録」ボタン ********************
     register_btn = st.button("料理を登録")
     if register_btn:
         food_attribute = []
