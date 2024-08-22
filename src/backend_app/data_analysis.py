@@ -146,7 +146,7 @@ def __judge_food_exist_in_refragerator(
 
 def gen_df_to_register_c(
     raw_df: myst.RawDataFrame, cooking_info: myst.CookingInfo
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.DataFrame, int]:
     df_c = raw_df.df_cooking
     cooking_id = __issue_new_id(df_c["CookingID"].tolist())
 

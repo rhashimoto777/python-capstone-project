@@ -1,4 +1,5 @@
 *.pyc
 __pycache__/
 cooking_system.db
+current_user.txt
 venv/

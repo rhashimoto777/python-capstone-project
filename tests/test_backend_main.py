@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Generator
 
 import pandas as pd
 import pytest
@@ -12,7 +13,7 @@ from tests import test_my_struct
 
 
 @pytest.fixture(autouse=True)
-def setup_and_teardown():
+def setup_and_teardown() -> Generator[BackEndOperator, None, None]:
     """
     テストの実行前後でDataBase値が変わらないようにする。
     """
@@ -169,7 +170,7 @@ def test_register_cooking(setup_and_teardown):
 
     # 有効かつ空ではないなCookingInfoインスタンスを生成する。
     # 加えて関数実行前のcooking_idのリストを取得しておく
-    cooking_info: myst.CookingInfo = test_my_struct.gen_valid_cooking_info_instance()
+    cooking_info = test_my_struct.gen_valid_cooking_info_instance()
     existing_id_list = df_c_orig["CookingID"].tolist()
 
     # テストに用いたCookingInfoは、既存の料理と被っているのかを判別する。
@@ -210,7 +211,7 @@ def test_add_cooking_history_01(setup_and_teardown):
 
     # 既存のCookingHistoryに確実に存在しないCookingIDを用意するため、新しい料理を登録する。
     # 新しい料理が登録できなかった場合はテストが実行できないため、テスト条件の不良としてassertで落とす。
-    cooking_info: myst.CookingInfo = test_my_struct.gen_valid_cooking_info_instance()
+    cooking_info = test_my_struct.gen_valid_cooking_info_instance()
     cooking_id = backend_operator.register_new_cooking(cooking_info)
     assert cooking_id is not None
     assert cooking_id not in df_c_orig["CookingID"].tolist()
