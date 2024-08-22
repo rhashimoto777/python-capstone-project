@@ -54,6 +54,13 @@ def show_refrigerator_fooddata():
 
 def choice_food():
     global user_food_select
+    # セッションステートの初期化
+    if 'default_sel_food' not in st.session_state or 'default_sel_quantity' not in st.session_state:
+        st.session_state.default_sel_food = tmp_json_tool.restore("choice_food_fname")
+        st.session_state.default_sel_quantity = tmp_json_tool.restore("choice_food_fquantity")
+        if st.session_state.default_sel_quantity is None:
+            st.session_state.default_sel_quantity = {}
+        
     df_fooddata = translator.get_df_fooddata()
 
     # データフレーム内の'FoodName'列に含まれる食材名のうち、重複しないものがリスト形式で格納
@@ -64,26 +71,30 @@ def choice_food():
         st.subheader("食材を選んでください")
     with col2:
         # 前回選択内容をロードする。また、選択内容を消去するボタンを表示する。
-        last_select = tmp_json_tool.restore("choice_food")
-        default_food_sel = None
-        default_quantity_sel = None
+        default_sel_food = st.session_state.default_sel_food
+        default_sel_quantity = st.session_state.default_sel_quantity
 
-        if last_select is not None:
-            if len(last_select["FoodName"]) > 0 or len(last_select["Quantity"]) > 0:
-                bt_restore = st.button("選択内容を消去", key="cho_foo_res_last_sel")
-                if not bt_restore:
-                    default_food_sel = last_select["FoodName"]
-                    default_quantity_sel = last_select["Quantity"]
-                else:
-                    default_food_sel = None
-                    default_quantity_sel = None
+        if (default_sel_food is not None and len(default_sel_food) > 0) or (
+            default_sel_quantity is not  None and len(default_sel_quantity)
+        ):
+            bt_restore = st.button("選択内容を消去", key="cho_foo_res_last_sel")
+            if bt_restore:
+                default_sel_food = None
+                default_sel_quantity = {}
 
     selected_foods = []
     col1, col2 = st.columns(2)
     with col1:
         # 食材の選択
         selected_foods = st.multiselect(
-            "", food_options, default_food_sel, label_visibility="collapsed"
+            "", food_options, default_sel_food, label_visibility="collapsed"
+        )
+
+        # sessionstateとjsonに選択内容を保存
+        st.session_state.default_sel_food = selected_foods
+        tmp_json_tool.save(
+            key="choice_food_fname",
+            data=selected_foods,
         )
 
         # 食材に対する数量を入力
@@ -96,9 +107,6 @@ def choice_food():
         # 前回選択内容を保存するためのリスト
         quantity_list = []
 
-        # 前回選択内容を保存するための辞書
-        default_sel_dict = {food: quantity for food, quantity in zip(default_food_sel, default_quantity_sel)}
-
         for food_name in selected_foods:
             # データの取得
             map = df_fooddata["FoodName"] == food_name
@@ -109,7 +117,7 @@ def choice_food():
             dict["f_su_g"] = df_fooddata.loc[map, "StandardUnit_Grams"].values[0]
 
             # 食材個数の入力のためのデフォルト値を生成（前回選択内容をロード）
-            default_value = default_sel_dict.get(food_name, 1.0)
+            default_value = default_sel_quantity.get(food_name, 1.0)
 
             # 食材個数を入力
             msg = f'{food_name}の個数({dict["f_su_name"]})を入力してください'
@@ -119,6 +127,14 @@ def choice_food():
                 value=default_value,
                 step=0.1,
                 label_visibility="collapsed",
+            )
+
+            # sessionstateとjsonに選択内容を保存
+            default_sel_quantity[food_name] = quantity
+            st.session_state.default_sel_quantity = default_sel_quantity
+            tmp_json_tool.save(
+                key="choice_food_fquantity",
+                data=default_sel_quantity,
             )
 
             # 前回選択内容をリストに保存
@@ -136,11 +152,6 @@ def choice_food():
 
             user_food_select.append(dict)
 
-        # jsonに選択内容を保存
-        tmp_json_tool.save(
-            key="choice_food",
-            data={"FoodName": selected_foods, "Quantity": quantity_list},
-        )
     with col2:
         if len(selected_foods) > 0:
             # # PFCバランスの円グラフを作成
